@@ -9,17 +9,26 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Find the kit folders (works wherever they were uploaded)
+        run: |
+          MP=$(find . -name make_plugin.py -not -path './.git/*' | head -1)
+          DF=$(find . -name Dockerfile -path '*toolchain*' -not -path './.git/*' | head -1)
+          echo "Found make_plugin.py at: [$MP]  Dockerfile at: [$DF]"
+          echo "Files in the repository:"; find . -type f -not -path './.git/*' | sort | head -60
+          if [ -z "$MP" ] || [ -z "$DF" ]; then echo "ERROR: the synth_sdk and toolchain folders were not uploaded to this repository."; exit 1; fi
+          echo "SDK=$(dirname "$MP")" >> "$GITHUB_ENV"
+          echo "TC=$(dirname "$DF")" >> "$GITHUB_ENV"
       - name: Install the packaging helper
         run: pip install pyelftools
       - name: PC sound test (checks the engine runs and makes sound)
-        run: cd synth_sdk && python3 harness/audio.py bloodmoon
+        run: cd "$SDK" && python3 harness/audio.py bloodmoon
       - name: Build the Blackfin compiler (slow, about 40 to 60 minutes)
-        run: docker build -t bfin-elf-toolchain toolchain
+        run: docker build -t bfin-elf-toolchain "$TC"
       - name: Build the plugin file
-        run: cd synth_sdk && python3 make_plugin.py plugins/bloodmoon && ls -l build/plugins
+        run: cd "$SDK" && python3 make_plugin.py plugins/bloodmoon && ls -l build/plugins
       - name: Save the plugin file
         uses: actions/upload-artifact@v4
         with:
           name: bloodmoon-op1p
-          path: synth_sdk/build/plugins/bloodmoon.op1p
+          path: ${{ env.SDK }}/build/plugins/bloodmoon.op1p
           if-no-files-found: error
