@@ -9,6 +9,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Unpack the kit zip (if the zip file was uploaded as it is)
+        run: |
+          for z in ./*.zip; do [ -f "$z" ] && unzip -q -o "$z" && echo "Unpacked $z"; done || true
       - name: Find the kit folders (works wherever they were uploaded)
         run: |
           MP=$(find . -name make_plugin.py -not -path './.git/*' | head -1)
