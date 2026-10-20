@@ -1,1 +1,25 @@
-
+name: Build BLOODMOON plugin
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install the packaging helper
+        run: pip install pyelftools
+      - name: PC sound test (checks the engine runs and makes sound)
+        run: cd synth_sdk && python3 harness/audio.py bloodmoon
+      - name: Build the Blackfin compiler (slow, about 40 to 60 minutes)
+        run: docker build -t bfin-elf-toolchain toolchain
+      - name: Build the plugin file
+        run: cd synth_sdk && python3 make_plugin.py plugins/bloodmoon && ls -l build/plugins
+      - name: Save the plugin file
+        uses: actions/upload-artifact@v4
+        with:
+          name: bloodmoon-op1p
+          path: synth_sdk/build/plugins/bloodmoon.op1p
+          if-no-files-found: error
