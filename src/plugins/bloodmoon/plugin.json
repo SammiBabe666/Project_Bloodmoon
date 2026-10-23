@@ -1,0 +1,20 @@
+{
+  "name": "bloodmoon",
+  "author": "Nola Drift",
+  "kind": "synth",
+  "symbol": "ENGINE_bloodmoon",
+  "sources": [
+    "bloodmoon.c",
+    "moon.c"
+  ],
+  "defaults": [
+    14000,
+    20000,
+    7000,
+    9000
+  ],
+  "screen": {
+    "svg": "bloodmoon.svg",
+    "symbol": "SCREEN_bloodmoon"
+  }
+}
