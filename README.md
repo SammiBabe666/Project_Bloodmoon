@@ -7,7 +7,7 @@ A custom synth engine plugin by Nola Drift, made for gothic ambient, witch house
 
 *Preview drawn on a computer from the plugin's own screen code. The OP-1's display may look slightly different.*
 
-> **Status: early release.** The sound engine and screen have been checked on a computer and in a Blackfin processor simulator (see [How it was checked](#how-it-was-checked)). Reports from real OP-1s are very welcome.
+
 
 ---
 
