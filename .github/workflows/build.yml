@@ -9,9 +9,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Unpack the kit zip (if the zip file was uploaded as it is)
-        run: |
-          for z in ./*.zip; do [ -f "$z" ] && unzip -q -o "$z" && echo "Unpacked $z"; done || true
       - name: Find the kit folders (works wherever they were uploaded)
         run: |
           MP=$(find . -name make_plugin.py -not -path './.git/*' | head -1)
@@ -29,9 +26,24 @@ jobs:
         run: docker build -t bfin-elf-toolchain "$TC"
       - name: Build the plugin file
         run: cd "$SDK" && python3 make_plugin.py plugins/bloodmoon && ls -l build/plugins
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{github.ref}}
+          release_name: Release ${{ github.ref }}
+          body: New Version
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Save the plugin file
         uses: actions/upload-artifact@v4
         with:
           name: bloodmoon-op1p
           path: ${{ env.SDK }}/build/plugins/bloodmoon.op1p
           if-no-files-found: error
+      - name: Upload Artifact
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ env.SDK }}/build/plugins/bloodmoon.op1p
+          asset_name: bloodmoon.op1p
