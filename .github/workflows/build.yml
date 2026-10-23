@@ -12,7 +12,7 @@ jobs:
       - name: Find the kit folders (works wherever they were uploaded)
         run: |
           MP=$(find . -name make_plugin.py -not -path './.git/*' | head -1)
-          DF=$(find . -name Dockerfile -path '*toolchain*' -not -path './.git/*' | head -1)
+          DF=$(find . -name Dockerfile -not -path './.git/*' | head -1)
           echo "Found make_plugin.py at: [$MP]  Dockerfile at: [$DF]"
           echo "Files in the repository:"; find . -type f -not -path './.git/*' | sort | head -60
           if [ -z "$MP" ] || [ -z "$DF" ]; then echo "ERROR: the synth_sdk and toolchain folders were not uploaded to this repository."; exit 1; fi
