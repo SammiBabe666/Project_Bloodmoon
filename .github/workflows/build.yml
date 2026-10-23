@@ -1,49 +1,84 @@
 name: Build BLOODMOON plugin
-on: workflow_dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Release tag, for example v1.2.3
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 240
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Find the kit folders (works wherever they were uploaded)
+
+      - name: Find the kit folders
+        id: find-kit
+        shell: bash
         run: |
-          MP=$(find . -name make_plugin.py -not -path './.git/*' | head -1)
-          DF=$(find . -name Dockerfile -not -path './.git/*' | head -1)
-          echo "Found make_plugin.py at: [$MP]  Dockerfile at: [$DF]"
-          echo "Files in the repository:"; find . -type f -not -path './.git/*' | sort | head -60
-          if [ -z "$MP" ] || [ -z "$DF" ]; then echo "ERROR: the synth_sdk and toolchain folders were not uploaded to this repository."; exit 1; fi
-          echo "SDK=$(dirname "$MP")" >> "$GITHUB_ENV"
-          echo "TC=$(dirname "$DF")" >> "$GITHUB_ENV"
+          MP=$(find . -name make_plugin.py -not -path './.git/*' -print -quit)
+          DF=$(find . -name Dockerfile -not -path './.git/*' -print -quit)
+
+          echo "Found make_plugin.py at: [$MP]"
+          echo "Found Dockerfile at: [$DF]"
+
+          if [[ -z "$MP" || -z "$DF" ]]; then
+            echo "ERROR: the synth_sdk and toolchain folders were not uploaded to this repository."
+            exit 1
+          fi
+
+          SDK_DIR=$(dirname "$MP")
+          TC_DIR=$(dirname "$DF")
+
+          echo "SDK=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "sdk=$SDK_DIR" >> "$GITHUB_OUTPUT"
+          echo "tc=$TC_DIR" >> "$GITHUB_OUTPUT"
+
       - name: Install the packaging helper
-        run: pip install pyelftools
-      - name: PC sound test (checks the engine runs and makes sound)
+        run: python -m pip install pyelftools
+
+      - name: PC sound test
         run: cd "$SDK" && python3 harness/audio.py bloodmoon
-      - name: Build the Blackfin compiler (slow, about 40 to 60 minutes)
-        run: docker build -t bfin-elf-toolchain "$TC"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build the Blackfin compiler
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ steps.find-kit.outputs.tc }}
+          tags: bfin-elf-toolchain
+          load: true
+          cache-from: type=gha,scope=blackfin-toolchain
+          cache-to: type=gha,scope=blackfin-toolchain,mode=max
+
       - name: Build the plugin file
         run: cd "$SDK" && python3 make_plugin.py plugins/bloodmoon && ls -l build/plugins
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          tag_name: ${{github.ref}}
-          release_name: Release ${{ github.ref }}
-          body: New Version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Save the plugin file
+
+      - name: Save the plugin as a workflow artifact
         uses: actions/upload-artifact@v4
         with:
           name: bloodmoon-op1p
-          path: ${{ env.SDK }}/build/plugins/bloodmoon.op1p
+          path: ${{ steps.find-kit.outputs.sdk }}/build/plugins/bloodmoon.op1p
           if-no-files-found: error
-      - name: Upload Artifact
-        uses: actions/upload-release-asset@v1
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ env.SDK }}/build/plugins/bloodmoon.op1p
-          asset_name: bloodmoon.op1p
+          tag_name: ${{ inputs.tag_name }}
+          target_commitish: ${{ github.ref_name }}
+          name: BLOODMOON ${{ inputs.tag_name }}
+          generate_release_notes: true
+          draft: false
+          files: ${{ steps.find-kit.outputs.sdk }}/build/plugins/bloodmoon.op1p
+          fail_on_unmatched_files: true
