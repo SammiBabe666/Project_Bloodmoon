@@ -17,6 +17,7 @@
 #define ORGAN_PEAK        18000      /* organ harmonics sum to at most this (Q15 amplitude) */
 #define BELL_A_PEAK       5200       /* bell partial at ~1.1875x, at full strike level */
 #define BELL_B_PEAK       3600       /* bell partial at ~2.40625x */
+#define OUT_GAIN          23170      /* Q15 output gain, -3 dB from full scale: +3 dB over 1.0 (+6 dB crackled the OP-1's speaker) */
                                      /* worst case 18000 + 5200 + 3600 = 26800 < 32767, so no clipping before the gain */
 
 #define VIB_MAX_AMT       1400       /* white knob full: +-1400/32768 = +-4.3% frequency, about +-73 cents */
@@ -134,7 +135,7 @@ static void bm_render(void *self, int16_t *out, const int16_t *params)
                        + sine[(ph * 3u) >> 19] * g3 + sine[(ph << 2) >> 19] * g4) >> 15;
         int32_t bell = (sine[ph_a >> 19] * ba + sine[ph_b >> 19] * bb) >> 15;
 
-        out[n] = op1_sat16(((organ + bell) * vg) >> 16);              /* half scale: six voices share the synth bus */
+        out[n] = op1_sat16(((((organ + bell) * vg) >> 15) * OUT_GAIN) >> 15);   /* peak 26800 * 0.71 = 19000 per voice */
     }
     v->ph = ph; v->ph_a = ph_a; v->ph_b = ph_b; v->vib_ph = vib_ph;
 }
