@@ -3,6 +3,9 @@
  *   green (ECLIPSE)  : the two green tower bells swing; the knob sets how far (still at 0, about +-20 degrees at full)
  *   blue  (BLOOD)    : the blue rose window turns (half a turn over the knob's travel)
  *   white (HAUNTING) : the white stars flicker; none at 0, more and longer the higher the knob
+ * Beside the cathedral each knob's name and its value 0..100 in blackletter (tests/make_labels.py builds the panels):
+ * one SVG group per digit glyph and position, k<knob>p<pos>d<digit>, shown for the current value, and the knob's group
+ * k<knob>v shifted so a one or two digit number stays centred.
  * GUI thread, integers only. Every node lookup is checked, so a missing id only disables that effect.
  * Copyright (C) 2026 Nola Drift. GPL-3.0-or-later with the OP-1 firmware permission (see LICENSE and NOTICE).
  * Screen structure follows the SDK examples (fmbell, brassophone) by pcppcp and nvmsocool. */
@@ -14,9 +17,12 @@
 #define BELL_R_X    193.61
 #define BELL_Y      83.59
 #define MOON_DROP   24                     /* the moon sits this many pixels lower with the red knob at 0 */
+#define DIGIT_CELL_Q10 14938               /* digit cell width, 14.588 px (printed by tests/make_labels.py) */
 
 static void *moon_node, *rose_node, *bell_l, *bell_r, *star_node[3];
 static uint32_t swing_q, twinkle_q;        /* phases in 1/256 table steps (8192 * 256 = one period) */
+static void *val_grp[4], *digit[4][3][10]; /* digit[k][0][1] is the hundreds 1, the other [k][0][d] stay 0 */
+static int shown[4];                       /* value on screen per knob, -1 = none yet */
 
 static inline int32_t tsin(int32_t a) { return OP1_SINE_TABLE[a & 8191]; }
 static inline int32_t tcos(int32_t a) { return tsin(a + 2048); }
@@ -31,6 +37,41 @@ static void moon_init(void *scr)
     star_node[1] = op1_find_node(scr, "stars1");
     star_node[2] = op1_find_node(scr, "stars2");
     swing_q = 0; twinkle_q = 0;
+    char id[7];
+    id[0] = 'k';
+    for (int k = 0; k < 4; k++) {
+        id[1] = (char)('0' + k); id[2] = 'v'; id[3] = 0;
+        val_grp[k] = op1_find_node(scr, id);
+        id[2] = 'p'; id[4] = 'd'; id[6] = 0;
+        for (int p = 0; p < 3; p++)
+            for (int d = 0; d < 10; d++) {
+                id[3] = (char)('0' + p); id[5] = (char)('0' + d);
+                digit[k][p][d] = (p || d == 1) ? op1_find_node(scr, id) : 0;
+            }
+        shown[k] = -1;
+    }
+}
+
+static inline void show_digit(void *n, int on) { if (n) op1_node_set_visible(n, on); }
+
+/* the knob's value as 0..100: only the digits of the new value visible, the group centred for its digit count */
+static void show_value(int k, int32_t knob)
+{
+    int v = (int)((knob * 100 + 16383) >> 15);
+    int n = v >= 100 ? 3 : v >= 10 ? 2 : 1;
+    if (val_grp[k]) {                                            /* every frame, like the moon's transform */
+        int32_t m[9] = { 1024, 0, 0, 0, 1024, 0, -(3 - n) * (DIGIT_CELL_Q10 / 2), 0, 1024 };
+        op1_node_set_transform(val_grp[k], m);
+    }
+    if (v == shown[k]) return;
+    for (int p = 0; p < 3; p++)
+        for (int d = 0; d < 10; d++) show_digit(digit[k][p][d], 0);
+    int q = (v * 205) >> 11;                                     /* v / 10, exact for 0..1028: no libgcc division */
+    int ones = v - q * 10, tens = q >= 10 ? q - 10 : q;
+    show_digit(digit[k][2][ones], 1);
+    if (n >= 2) show_digit(digit[k][1][tens], 1);
+    if (n == 3) show_digit(digit[k][0][1], 1);
+    shown[k] = v;
 }
 
 static void moon_update(void *scr, int dt)
@@ -73,6 +114,8 @@ static void moon_update(void *scr, int dt)
             op1_node_set_visible(star_node[i], tsin(a) > thr);
         }
     }
+
+    for (int i = 0; i < 4; i++) show_value(i, k[i]);
 
     op1_screen_draw(scr, dt);                                        /* the SVG; nothing is drawn over it */
 }

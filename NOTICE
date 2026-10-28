@@ -35,3 +35,8 @@ THIRD-PARTY CODE (MIT License, compatible with the GPL; their notices are kept)
   (https://github.com/op1hacks/op1repacker).
 - svgfont.py and the Oblique Strategies idea: (c) 2026 Martin Mairinger, MIT License
   (https://github.com/ultralazr/op1-oblique-strategies).
+
+THIRD-PARTY FONT (SIL Open Font License 1.1)
+- BLOODMOON's knob names and numbers (plugins/bloodmoon/bloodmoon.svg, panels group) are outlines of Pirata One,
+  (c) 2012 Rodrigo Fuenzalida and Nicolas Massi, Reserved Font Name 'Pirata'. The font and its licence are in
+  synth_sdk/tests/fonts (used only by tests/make_labels.py to build the SVG).
