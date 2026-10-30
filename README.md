@@ -9,6 +9,10 @@ A custom synth engine plugin by Nola Drift, made for gothic ambient, witch house
 
 **Current stable version: v1.3.** Tested and playing well on a real OP-1 (R246). See [CHANGELOG.md](CHANGELOG.md).
 
+**Experimental: v1.4 for Hundekraft 3.0 (`.knl`).** The same sound and screen packed as a Hundekraft kennel plugin, in [`knl/`](knl/INSTALL.md). It has not been tested on a real OP-1 yet.
+
+🎥 [30-second demo](media/bloodmoon_demo.mp4) · [preset tour](media/bloodmoon_preset_tour.mp4) (rendered on a computer from the plugin's own sound and screen code)
+
 
 
 ---
@@ -97,6 +101,10 @@ GitHub builds the plugin file for you on its free servers. You only click button
 | `Dockerfile` | The recipe for the Blackfin compiler. |
 | `presets/bloodmoon/` | The 8 presets. |
 | `CHANGELOG.md` | What changed in each version. |
+| `knl/` | **Experimental** v1.4 Hundekraft 3.0 build: `bloodmoon.knl`, its source and install guide. Not yet tested on hardware. |
+| `media/` | Demo and preset tour videos. |
+| `releases/` | Older plugin files: v1.0, v1.1-louder (the old screen with the louder level, a fallback if the v1.2+ screen ever causes trouble) and v1.2. |
+| `docs/` | Release posts for Reddit and Discord, and the changelog as a Word document. |
 | `.github/workflows/build.yml` | The "Build BLOODMOON plugin" button on the Actions tab. |
 | `HOW_TO_GET_BLOODMOON_OP1P.md` | Step-by-step build guide. |
 | `bloodmoon_screen_preview.png` | The screen preview above. |

@@ -2,10 +2,17 @@
 
 | Version | Date | In one line | On a real OP-1 |
 |---|---|---|---|
+| v1.4-knl (experimental) | 22 Oct 2026 | Same as v1.3, packed as a Hundekraft 3.0 `.knl` plugin | Not yet tested |
 | **v1.3** (stable) | 21 Oct 2026 | Output level set to +3 dB over v1.0 to stop speaker crackle | Plays well |
 | v1.2 | 21 Oct 2026 | Knob names and values on the screen, 8 presets, +6 dB | Screen shows; crackled on the speaker |
 | v1.1 | 21 Oct 2026 | +6 dB louder, old screen | Not reported separately |
 | v1.0 | 20 Oct 2026 | First release | Works |
+
+## v1.4-knl: Hundekraft 3.0 port (experimental)
+
+`knl/bloodmoon.knl` is v1.3's sound, knobs and screen packed as a Hundekraft 3.0 kennel plugin (built against the 3.0.3 SDK, bfin-elf-gcc 13.3). Plugin ID `bloodmoon`, so saved sounds and the presets keep working. Install only one of the `.op1p` and the `.knl`.
+
+Checked with the SDK's tools (packer with no warnings, reference loader at two load addresses, `svg_check.py`, export test). It has not been loaded on a real OP-1 or the emulator. See `knl/INSTALL.md`.
 
 ## v1.3: level for the speaker
 
