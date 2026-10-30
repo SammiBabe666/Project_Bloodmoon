@@ -1,0 +1,10 @@
+# noladrift.bloodmoon: BLOODMOON, a dark organ with a haunted bell, as an Opus 2 synth engine. Its T1 screen is
+# v1.3's moon and cathedral (bloodmoon.svg); the OS's encoders turn its four knobs, so it takes no controls.
+# core 2.6: the engine's own OS screen (svg, screen_init, screen_draw) and the "type" that loads op1r's sounds.
+opmod     1
+id        noladrift.bloodmoon
+name      Bloodmoon
+author    Nola Drift
+version   1.5.0
+core      2.6
+adds      engine bloodmoon
