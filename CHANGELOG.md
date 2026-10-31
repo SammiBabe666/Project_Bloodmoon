@@ -2,11 +2,18 @@
 
 | Version | Date | In one line | On a real OP-1 |
 |---|---|---|---|
+| v1.5 | 31 Oct 2026 | A ready-made download zip: the Opus 2 `.opmod` and the Hundekraft `.knl`, nothing to build | Not yet tested |
 | v1.4-knl (experimental) | 22 Oct 2026 | Same as v1.3, packed as a Hundekraft 3.0 `.knl` plugin | Not yet tested |
 | **v1.3** (stable) | 21 Oct 2026 | Output level set to +3 dB over v1.0 to stop speaker crackle | Plays well |
 | v1.2 | 21 Oct 2026 | Knob names and values on the screen, 8 presets, +6 dB | Screen shows; crackled on the speaker |
 | v1.1 | 21 Oct 2026 | +6 dB louder, old screen | Not reported separately |
 | v1.0 | 20 Oct 2026 | First release | Works |
+
+## v1.5: download and play
+
+- New: BLOODMOON for **Opus 2** (`bloodmoon.opmod`, core 2.6 or newer). It uses the same sound and screen code as v1.3 on Opus's engine service, and op1r's sound type, so existing presets load. Velocity is now applied once, by the OS, so soft notes are a little louder than on v1.3. The T4 LFO can move the four knobs.
+- `download/bloodmoon-1.5.zip` holds the `.opmod`, the v1.4 Hundekraft `.knl`, the 8 presets and one install guide for both. Nobody needs to build anything.
+- The build workflows and build guides were removed. The source stays in `opus/`, `knl/` and `src/`. The v1.3 `.op1p` moved to `releases/v1.3/`.
 
 ## v1.4-knl: Hundekraft 3.0 port (experimental)
 
