@@ -1,0 +1,76 @@
+name: Build BLOODMOON for Opus 2
+
+# Builds opus/noladrift.bloodmoon into bloodmoon.opmod with the Opus 2 plugin kit (LizardMan245/opus, pinned below),
+# after the computer test against v1.3. Runs on every pull request and push that touches opus/, and by hand.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths: ['opus/**', '.github/workflows/build-opus.yml']
+  push:
+    branches: [main]
+    paths: ['opus/**', '.github/workflows/build-opus.yml']
+
+permissions:
+  contents: read
+
+env:
+  OPUS_REPO: LizardMan245/opus
+  OPUS_COMMIT: d9b0d2e6ddf660d7db758f2be9647585fe100ad8   # Opus 2.0 beta 3, plugin kit for core 2.13
+  BFIN: /home/runner/bfin-build/linux-install
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get the Opus 2 plugin kit
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.OPUS_REPO }}
+          ref: ${{ env.OPUS_COMMIT }}
+          path: opus-kit
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: The generated headers match bloodmoon.svg
+        run: python opus/make_headers.py && git diff --exit-code -- opus/
+
+      - name: Computer test against v1.3 (sound sample for sample, the screen's moving parts)
+        run: OPUS_SDK=opus-kit/plugin-kit/sdk OUT=$RUNNER_TEMP/test opus/tests/run.sh
+
+      - name: Check the screen's SVG as the OP-1's parser reads it
+        run: python opus-kit/plugin-kit/plugin_tool.py svg opus/noladrift.bloodmoon/bloodmoon.svg
+
+      - name: Restore the Blackfin compiler
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BFIN }}
+          key: bfin-elf-${{ runner.os }}-${{ hashFiles('opus-kit/plugin-kit/tools/toolchain/build-bfin-toolchain.sh') }}
+
+      - name: Build the Blackfin compiler (first run only, about 30 to 60 minutes)
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          sudo bash opus-kit/plugin-kit/tools/toolchain/build-bfin-toolchain.sh deps
+          WORK=/home/runner/bfin-build bash opus-kit/plugin-kit/tools/toolchain/build-bfin-toolchain.sh fetch verify extract linux
+
+      - name: Build bloodmoon.opmod
+        run: |
+          export OP1_BFIN_TOOLCHAIN=$BFIN
+          "$BFIN/bin/bfin-elf-gcc" --version | head -1
+          mkdir -p out
+          python opus-kit/plugin-kit/plugin_tool.py build opus/noladrift.bloodmoon --out out/bloodmoon.opmod
+          python opus-kit/plugin-kit/plugin_tool.py show out/bloodmoon.opmod | tee out/bloodmoon.opmod.txt
+
+      - name: Save bloodmoon.opmod
+        uses: actions/upload-artifact@v4
+        with:
+          name: bloodmoon-opmod
+          path: |
+            out/bloodmoon.opmod
+            out/bloodmoon.opmod.txt
+          if-no-files-found: error
