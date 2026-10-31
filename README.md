@@ -7,13 +7,21 @@ A custom synth engine plugin by Nola Drift, made for gothic ambient, witch house
 
 *Preview drawn on a computer from the plugin's own screen code. The OP-1's display may look slightly different.*
 
-**Current stable version: v1.3.** Tested and playing well on a real OP-1 (R246). See [CHANGELOG.md](CHANGELOG.md).
+## Download
 
-**Experimental: v1.4 for Hundekraft 3.0 (`.knl`).** The same sound and screen packed as a Hundekraft kennel plugin, in [`knl/`](knl/INSTALL.md). It has not been tested on a real OP-1 yet.
+**[Download BLOODMOON 1.5 (zip)](download/bloodmoon-1.5.zip)**: everything you need, nothing to build. Inside:
+
+| For | File |
+|---|---|
+| **Opus 2** (LizardMan's plugin manager, core 2.6 or newer) | `opus/bloodmoon.opmod`, which you copy into the OP-1's mods folder |
+| **Hundekraft 3.0** or newer | `hundekraft/bloodmoon.knl`, which you add in the Hundekraft Workshop |
+| Either one | `presets/bloodmoon/` (8 presets) and `INSTALL.md` (the steps for both) |
+
+Both files play the same sound, knobs and screen as v1.3. Neither has been tried on a real OP-1 yet, so please report
+how it goes. The last version tested on hardware is the v1.3 op1r file in [`releases/v1.3/`](releases/v1.3/).
+See [CHANGELOG.md](CHANGELOG.md).
 
 🎥 [30-second demo](media/bloodmoon_demo.mp4) · [preset tour](media/bloodmoon_preset_tour.mp4) (rendered on a computer from the plugin's own sound and screen code)
-
-
 
 ---
 
@@ -64,52 +72,32 @@ Eight presets are in `presets/bloodmoon/`. Back up your OP-1's `synth` folder fi
 
 ## Install
 
-You need an **original OP-1** (not the Field), its original unmodified firmware file `op1_246.op1`, and the plugin file `bloodmoon.op1p`.
+Unzip [the download](download/bloodmoon-1.5.zip) and follow its `INSTALL.md`. In short:
 
-1. **Get the plugin file.** Download `bloodmoon.op1p` from the top of this repository (v1.3, tested) or from the **Releases** page. You can also [build it yourself](#build-it-yourself-no-coding-needed).
-2. **Back up your OP-1** (tapes, synth and drum presets) using the OP-1's disk mode.
-3. Open the [Hundekraft OP-1 Workshop](https://hundekraft.github.io/op1-workshop/index.html) and give it your original `op1_246.op1`.
-4. Under **Your plugins**, add `bloodmoon.op1p`. The Workshop checks the file. If it shows a compatibility note, read it before you acknowledge it.
-5. Build and install as the Workshop's page tells you (this normally means holding COM while switching the OP-1 on, to install firmware). If your OP-1 already runs a Hundekraft 3.0 firmware, you can connect it and use **Update OP-1** instead.
-6. On the OP-1, press **T1** on a synth patch and choose **bloodmoon**. Start with the volume low.
+- **Opus 2:** in disk mode, copy `opus/bloodmoon.opmod` into the **mods** folder and restart. The bloodmoon row in
+  Opus's mods list (menu, **T2**) should say "loaded". Then choose it with **shift + T1** on a synth slot.
+  If anything goes wrong, hold **Stop** while you switch on to start with no plugins.
+- **Hundekraft 3.0:** in the [Hundekraft OP-1 Workshop](https://hundekraft.github.io/op1-workshop/index.html), add
+  `hundekraft/bloodmoon.knl` under **Your plugins** and press **Update OP-1**. Then choose it with **shift + T1**.
 
-## If something goes wrong
-
-- If the OP-1 hangs while starting up, switch it off and on again. The Workshop's firmware leaves a marker file while it loads plugins and removes it once the screen has been running for about 7 to 10 seconds. If the marker is still there at the next start, it skips all plugin files for that boot.
-- If it locks up later, or misbehaves in any way: switch it off, hold **COM** while switching it on, choose firmware update, and install a Workshop build without BLOODMOON. If your OP-1 already runs a Hundekraft 3.0 firmware, you can instead use the Workshop to remove the plugin. The Workshop says your tapes, album and presets stay in place.
-
-## Build it yourself (no coding needed)
-
-GitHub builds the plugin file for you on its free servers. You only click buttons.
-
-1. Fork this repository (or copy `src/`, `Dockerfile` and `.github/workflows/build.yml` into a repository of your own).
-2. Open the **Actions** tab, choose **Build BLOODMOON plugin**, then **Run workflow** and give it a release tag such as `v1.3`. The first run takes about an hour, almost all of it building the compiler.
-3. When the run has a green tick, open it, scroll to **Artifacts** and download **bloodmoon-op1p**.
-4. Unzip it. Inside is `bloodmoon.op1p`. The run also publishes it as a GitHub release under the tag you gave.
-
-**Important:** never open `bloodmoon.op1p` in a text editor, and don't copy and paste its contents. That damages the file and the Workshop will refuse it. Just drag the file itself where it needs to go.
-
-`HOW_TO_GET_BLOODMOON_OP1P.md` has the same steps in more detail.
+Back up your OP-1 (tapes and synth presets) in disk mode first, and start with the volume low.
 
 ## What's in this repository
 
 | File | What it is |
 |---|---|
-| `bloodmoon.op1p` | The v1.3 plugin file, ready for the Workshop. |
-| `src/` | All the source: the engine (`plugins/bloodmoon/bloodmoon.c`), the screen code (`moon.c`), the artwork (`bloodmoon.svg`), the plugin recipe (`plugin.json`), and the op1r SDK files needed to build it. |
-| `src/tests/` | Tools that build the knob panels (`make_labels.py`) and presets (`make_presets.py`), the screen digit test (`screen_test.c`) and the preview renderer. |
-| `Dockerfile` | The recipe for the Blackfin compiler. |
+| `download/` | The ready-made download: `bloodmoon-1.5.zip`, and the same files unzipped. |
+| `opus/` | Source of the Opus 2 build (`noladrift.bloodmoon/`), its computer test and notes. |
+| `knl/` | Source of the Hundekraft build and its notes. |
+| `src/` | The original op1r source (engine, screen code, artwork) and the tools that made the presets and knob panels. |
 | `presets/bloodmoon/` | The 8 presets. |
+| `releases/` | Older plugin files: v1.0, v1.1-louder, v1.2 and v1.3 (the op1r `.op1p` files). |
+| `media/`, `docs/` | Demo videos, release posts and the changelog as a Word document. |
 | `CHANGELOG.md` | What changed in each version. |
-| `knl/` | **Experimental** v1.4 Hundekraft 3.0 build: `bloodmoon.knl`, its source and install guide. Not yet tested on hardware. |
-| `media/` | Demo and preset tour videos. |
-| `releases/` | Older plugin files: v1.0, v1.1-louder (the old screen with the louder level, a fallback if the v1.2+ screen ever causes trouble) and v1.2. |
-| `docs/` | Release posts for Reddit and Discord, and the changelog as a Word document. |
-| `.github/workflows/build.yml` | The "Build BLOODMOON plugin" button on the Actions tab. |
-| `HOW_TO_GET_BLOODMOON_OP1P.md` | Step-by-step build guide. |
-| `bloodmoon_screen_preview.png` | The screen preview above. |
 
 ## How it was checked
+
+These checks are for v1.3, the op1r `.op1p` build. The Opus 2 and Hundekraft builds use the same sound and screen code; their own checks are in [`opus/README.md`](opus/README.md) and [`knl/INSTALL.md`](knl/INSTALL.md).
 
 | Check | Result |
 |---|---|
@@ -132,7 +120,7 @@ The simulator is not the OP-1's firmware. Cache and memory delays, interrupt tim
 
 ## Feedback
 
-Please open an issue and tell us your OP-1's firmware version (it should be R246), what you heard or saw, and any message the Workshop showed.
+Please open an issue and tell us your OP-1's firmware version (it should be R246), what you heard or saw, which firmware mod it runs (Opus 2 or Hundekraft) and any message it showed.
 
 ## Credits and licence
 
@@ -142,4 +130,4 @@ Please open an issue and tell us your OP-1's firmware version (it should be R246
 - Installed with the [Hundekraft OP-1 Workshop](https://hundekraft.github.io/op1-workshop/index.html).
 - OP-1 is a Teenage Engineering product. This project is not affiliated with or endorsed by Teenage Engineering and contains no Teenage Engineering firmware.
 
-Licensed under **GPL-3.0-or-later with the additional OP-1 firmware permission** described in `LICENSE` and `NOTICE`. If you share the plugin file, share its source too. The `src/` folder in this repository is that source.
+Licensed under **GPL-3.0-or-later with the additional OP-1 firmware permission** described in `LICENSE` and `NOTICE`. If you share the plugin files, share their source too: `opus/`, `knl/` and `src/` in this repository are that source.
