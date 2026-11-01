@@ -1,0 +1,7 @@
+# BLOODMOON's CPU figure: its worst audio block in cycles, which the build writes into the manifest's cpu line. The
+# core switches the plugin off when it goes 25 % over this in 8 of the last 64 blocks.
+# NOT MEASURED YET: a provisional ceiling. 1.5.0 had no figure, so the core held it to a tenth of the block (58,052)
+# and switched it off on the device. 1.5.1 reads its sine table from fast memory and skips what is silent; six voices
+# should cost well under this. Replace it with the device's own number: developer mode on, six-voice chords with every
+# knob up, then "audio: worst N" in its details (the orange push on its row in the mods list).
+cycles 120000

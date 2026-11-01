@@ -4,7 +4,21 @@
 #define BM_H
 #include "opus_plugin.h"
 
-extern const short BM_SINE[8192];          /* sin(2 pi k / 8192), Q15 (bm_sine.h) */
+/* The sine, 8192 steps a turn in Q15, as v1.3's table gave it, from a quarter of it (bm_sine.h, 4 KB). The voices
+ * read it in every sample, so opl_init copies it into the OP-1's fast memory (L1, opus_fast): a 32-byte line of
+ * ordinary memory costs about 107 cycles each block an audio block touches it, and v1.3's whole 16 KB table read
+ * from ordinary memory by six voices cost more than the core's budget for the plugin (1.5.0 was switched off). */
+#define BM_QSINE_LEN 2049
+extern const short BM_QSINE[BM_QSINE_LEN]; /* in the plugin's image (bm_sine.h) */
+extern const short *bm_qsine;              /* the copy in fast memory, or BM_QSINE when there was no room */
+
+static inline int bm_sin(unsigned k)       /* k: 0..8191 (higher bits are ignored) */
+{
+    unsigned i = k & 2047;
+    if (k & 2048) i = 2048 - i;            /* the second and fourth quarters run backwards */
+    int s = bm_qsine[i];
+    return (k & 4096) ? -s : s;            /* the second half is the first, negated */
+}
 
 void bm_screen_init(void *scr);            /* moon.c: the OS screen's hooks (struct opus_engine's screen_*) */
 void bm_screen_draw(void *scr, int dt);

@@ -11,5 +11,5 @@ cc "${W[@]}" -DOP1_HOST -I"$ROOT/src" -c "$ROOT/src/plugins/bloodmoon/bloodmoon.
 for f in bloodmoon moon; do
     cc "${W[@]}" -ffreestanding -fno-builtin -I"$OPUS_SDK" -c "$ROOT/opus/noladrift.bloodmoon/$f.c" -o "$OUT/$f.o"
 done
-cc "${W[@]}" -I"$OPUS_SDK" "$ROOT/opus/tests/compare.c" "$OUT/v13.o" "$OUT/bloodmoon.o" "$OUT/moon.o" -lm -o "$OUT/compare"
+cc "${W[@]}" -I"$OPUS_SDK" -I"$ROOT/opus/noladrift.bloodmoon" "$ROOT/opus/tests/compare.c" "$OUT/v13.o" "$OUT/bloodmoon.o" "$OUT/moon.o" -lm -o "$OUT/compare"
 cd "$OUT" && ./compare

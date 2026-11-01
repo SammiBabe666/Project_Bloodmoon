@@ -1,13 +1,14 @@
 /* Host test of the Opus 2 port (opus/noladrift.bloodmoon) against v1.3 (src/plugins/bloodmoon), on the computer:
  *   1. the same notes, knobs and pitch through both engines: the port's samples must match v1.3's to within 2
  *      (v1.3 multiplies by velocity 127 = 32766/32768 in render and rounds twice; the port leaves velocity to the OS);
- *   2. the screen: every node it should move is found, and turning the knobs moves them as v1.3's screen does.
+ *   2. the sine: the quarter table in fast memory folds out to v1.3's whole table;
+ *   3. the screen: every node it should move is found, and turning the knobs moves them as v1.3's screen does.
  * Build and run: opus/tests/run.sh. Writes v13.raw and opus.raw (int16 mono) for listening. */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "opus_plugin.h"
+#include "bm.h"
 
 /* ---- v1.3, built with its own host harness names (-DOP1_HOST) in v13.o ---- */
 typedef struct { void (*note_on)(void *, const short *); void (*render)(void *, short *, const short *);
@@ -20,6 +21,9 @@ static const struct opus_engine *eng;
 int opus_engine_add(struct opl_self *self, const struct opus_engine *e) { (void)self; eng = e; return 0x1234; }
 int opus_art_text(struct opl_self *self, const char *name, const char *svg, unsigned len)
 { (void)self; (void)name; return (len > 40000 && strncmp(svg, "<?xml", 5) == 0 && svg[len - 2] == '>') ? 0 : -1; }
+static short fast_mem[4096];
+static unsigned fast_asked;
+void *opus_fast(struct opl_self *self, unsigned bytes) { (void)self; fast_asked = bytes; return bytes <= sizeof fast_mem ? fast_mem : 0; }
 void opus_log(struct opl_self *self, const char *t) { (void)self; fprintf(stderr, "log: %s\n", t); }
 static short knobs_now[8];
 int opus_engine_knobs(short par[8]) { memcpy(par, knobs_now, sizeof knobs_now); return 1; }
@@ -54,12 +58,16 @@ int main(void)
 {
     static struct opl_self self = { sizeof self, "noladrift.bloodmoon", "/yaffs2/mod/noladrift.bloodmoon", 0 };
     for (int i = 0; i < 8192; i++) host_sine[i] = (short)lrint(32767.0 * sin(2 * M_PI * i / 8192.0));
-    extern const short BM_SINE[8192];
-    if (memcmp(host_sine, BM_SINE, sizeof host_sine)) { fprintf(stderr, "FAIL: sine tables differ\n"); return 1; }
     if (opl_init(&self) || !eng || !eng->svg || !eng->screen_draw || strcmp(eng->type, "bloodmoon")) {
         fprintf(stderr, "FAIL: opl_init / the engine struct\n"); return 1;
     }
     printf("engine \"%s\", type \"%s\", %u voice bytes, screen %s\n", eng->name, eng->type, eng->voice, eng->svg);
+    /* the quarter table, folded, in fast memory, gives v1.3's whole table */
+    extern const short *bm_qsine;
+    if (bm_qsine != (const short *)fast_mem) { fprintf(stderr, "FAIL: the sine table is not in fast memory\n"); return 1; }
+    for (unsigned k = 0; k < 8192; k++)
+        if (bm_sin(k) != host_sine[k]) { fprintf(stderr, "FAIL: sine %u: %d, v1.3 %d\n", k, bm_sin(k), host_sine[k]); return 1; }
+    printf("sine: the 4 KB quarter table in fast memory matches v1.3's 8192 steps\n");
 
     /* 1. sound: knob sets, a phrase each, notes held 110 blocks then released 28, the seed shared by both */
     static const short sets[][4] = { { 14000, 20000, 7000, 9000 }, { 32767, 32767, 32767, 32767 }, { 0, 0, 0, 0 },

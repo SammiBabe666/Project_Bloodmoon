@@ -12,13 +12,15 @@
  * The sound code is v1.3's (src/plugins/bloodmoon/bloodmoon.c) line for line. What changed for Opus:
  *   - the voice is the core's (struct opus_engine's voice bytes), not iter's 0x24-byte object, so no vtable word;
  *   - pitch and knobs come in render's arguments, not from firmware addresses; the knobs have the LFO in;
- *   - the sine table is the plugin's own (bm_sine.h), not the firmware's;
+ *   - the sine table is the plugin's own (bm_sine.h, a quarter of v1.3's values), in fast memory (bm.h says why);
  *   - velocity is the OS's alone: v1.3 also multiplied by it in render, so soft notes are a little louder here.
  * Everything is integer / Q15, 32-bit only per sample, no libc.
  * Copyright (C) 2026 Nola Drift. GPL-3.0-or-later with the OP-1 firmware permission (see LICENSE and NOTICE). */
 #include "bm.h"
 #include "bm_sine.h"
 #include "bm_art.h"
+
+const short *bm_qsine = BM_QSINE;          /* opl_init moves it to fast memory when there is room */
 
 /* ---- tuning constants (v1.3's) ---- */
 #define ORGAN_PEAK        18000      /* organ harmonics sum to at most this (Q15 amplitude) */
@@ -92,7 +94,6 @@ static void bm_release(void *voice, const short *knobs)
 static void bm_render(void *voice, short *out, const short *par, const unsigned *pitch)
 {
     bm_voice_t *v = (bm_voice_t *)voice;
-    const short *sine = BM_SINE;
 
     /* ---- per-block control values (divisions are fine here, not per sample) ---- */
     int blood_t = clamp_q15(par[0]);
@@ -135,12 +136,19 @@ static void bm_render(void *voice, short *out, const short *par, const unsigned 
 
     unsigned ph = v->ph, ph_a = v->ph_a, ph_b = v->ph_b, vib_ph = v->vib_ph;
 
+    /* What is silent this block is not looked up: the LFOs at HAUNTING 0, the 4th harmonic low in BLOOD's travel, the
+     * bell once its strike has died away. The sound is the same sample for sample; only the cost drops. */
+    const int lfo = vib_amt | wob_amt, bell_on = ba | bb;
+
     for (int n = 0; n < BLOCK; n++) {
         /* pitch modulation: vibrato LFO plus a faster-moving (3x) instability LFO, both from one phase */
-        int l1 = sine[vib_ph >> 19];
-        int l2 = sine[(vib_ph * 3u + 0x55555555u) >> 19];
+        int mod = 0;
+        if (lfo) {
+            int l1 = bm_sin(vib_ph >> 19);
+            int l2 = bm_sin((vib_ph * 3u + 0x55555555u) >> 19);
+            mod = (l1 * vib_amt + l2 * wob_amt) >> 15;               /* |mod| < 1750, far below the 2^12 limit */
+        }
         vib_ph += vib_inc;
-        int mod = (l1 * vib_amt + l2 * wob_amt) >> 15;              /* |mod| < 1750, far below the 2^12 limit */
         int inc = (int)pitch[n];
         int eff = inc + (((inc >> 12) * mod) >> 3);
 
@@ -149,9 +157,10 @@ static void bm_render(void *voice, short *out, const short *par, const unsigned 
         ph_a += ue + (ue >> 3) + (ue >> 4);                           /* x1.1875 */
         ph_b += (ue << 1) + (ue >> 2) + (ue >> 3) + (ue >> 5);        /* x2.40625 */
 
-        int organ = (sine[ph >> 19] * g1 + sine[(ph << 1) >> 19] * g2
-                   + sine[(ph * 3u) >> 19] * g3 + sine[(ph << 2) >> 19] * g4) >> 15;
-        int bell = (sine[ph_a >> 19] * ba + sine[ph_b >> 19] * bb) >> 15;
+        int acc = bm_sin(ph >> 19) * g1 + bm_sin((ph << 1) >> 19) * g2 + bm_sin((ph * 3u) >> 19) * g3;
+        if (g4) acc += bm_sin((ph << 2) >> 19) * g4;
+        int organ = acc >> 15;
+        int bell = bell_on ? (bm_sin(ph_a >> 19) * ba + bm_sin(ph_b >> 19) * bb) >> 15 : 0;
 
         out[n] = sat16(((organ + bell) * OUT_GAIN) >> 15);           /* peak 26800 * 0.71 = 19000 per voice */
     }
@@ -176,6 +185,13 @@ static struct opus_engine BLOODMOON = {
 
 int opl_init(struct opl_self *self)
 {
+    short *fast = (short *)opus_fast(self, sizeof BM_QSINE);   /* 4 KB of the shared L1; without it, ordinary memory */
+    if (fast) {
+        for (int i = 0; i < BM_QSINE_LEN; i++) fast[i] = BM_QSINE[i];
+        bm_qsine = fast;
+    } else {
+        opus_log(self, "bloodmoon: no fast memory, the sine table stays in ordinary memory");
+    }
     if (opus_art_text(self, "bloodmoon.svg", BM_SVG, sizeof BM_SVG - 1) < 0) {
         opus_log(self, "bloodmoon: no room for the screen's art, the plain page instead");
         BLOODMOON.svg = 0;
