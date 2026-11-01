@@ -1,4 +1,4 @@
-# BLOODMOON 1.5: install
+# BLOODMOON 1.5.1: install
 
 A dark organ with a haunted bell for the **original OP-1** (not the Field), firmware 246. There are two plugin files
 in this zip. Pick the one for the firmware mod your OP-1 runs. You don't need to build anything.

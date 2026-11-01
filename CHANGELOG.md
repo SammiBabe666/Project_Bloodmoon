@@ -2,12 +2,23 @@
 
 | Version | Date | In one line | On a real OP-1 |
 |---|---|---|---|
+| v1.5.1 | 1 Nov 2026 | Opus build fixed: no longer switched off for its CPU | Not yet tested |
 | v1.5 | 31 Oct 2026 | A ready-made download zip: the Opus 2 `.opmod` and the Hundekraft `.knl`, nothing to build | Not yet tested |
 | v1.4-knl (experimental) | 22 Oct 2026 | Same as v1.3, packed as a Hundekraft 3.0 `.knl` plugin | Not yet tested |
 | **v1.3** (stable) | 21 Oct 2026 | Output level set to +3 dB over v1.0 to stop speaker crackle | Plays well |
 | v1.2 | 21 Oct 2026 | Knob names and values on the screen, 8 presets, +6 dB | Screen shows; crackled on the speaker |
 | v1.1 | 21 Oct 2026 | +6 dB louder, old screen | Not reported separately |
 | v1.0 | 20 Oct 2026 | First release | Works |
+
+## v1.5.1: Opus build fixed
+
+On a real OP-1, 1.5.0's Opus build drew its screen but made no sound: Opus showed "audio switched off: over its CPU". It had no CPU figure, so Opus held it to a tenth of the audio block (58,052 cycles), and its 16 KB sine table, read from ordinary memory in every sample of six voices, cost far more than that (Opus counts about 107 cycles for each 32-byte line of ordinary memory an audio block touches). 1.5.1:
+
+- copies a 4 KB quarter of the sine table (the same values, folded by symmetry) into the OP-1's fast memory at start;
+- skips what is silent: the vibrato LFOs at HAUNTING 0, the 4th harmonic while BLOOD is low, and the bell once its strike has died away;
+- carries a provisional CPU figure of 120,000 cycles until it is measured on a device.
+
+The sound is unchanged: the computer test still matches v1.3 to within 2 of 32,767. The `.knl` is unchanged.
 
 ## v1.5: download and play
 

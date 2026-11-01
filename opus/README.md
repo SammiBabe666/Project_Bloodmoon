@@ -12,7 +12,7 @@ or Opus's op1r bridge for it.
 
 - An original OP-1 (not the Field) with **Opus 2** installed: core **2.6 or newer** (beta 3 has core 2.13). You make
   the Opus update from your own firmware with the patcher at https://opus-op1.pages.dev/patcher/.
-- `bloodmoon.opmod`: in [the download zip](../download/bloodmoon-1.5.zip) (`opus/bloodmoon.opmod`), or on its own in
+- `bloodmoon.opmod`: in [the download zip](../download/bloodmoon-1.5.1.zip) (`opus/bloodmoon.opmod`), or on its own in
   [`download/opus/`](../download/opus/).
 
 ## Install
@@ -47,10 +47,12 @@ envelope, as before.
   2 of 32,767.
 - **LFO.** The knobs reach the engine with the OS's LFO already in them, so the T4 LFO can now move BLOOD, ECLIPSE,
   HAUNTING and MOONRISE.
-- **CPU.** BLOODMOON hasn't been measured on an OP-1 yet, so Opus holds it to a tenth of the audio block until a
-  `cpu.txt` is added. Once it has been played on a device (six-voice chords, every knob up, developer mode on), read
-  "audio: worst N" from its details (**orange** push on its row) and put `cycles N` in
-  `noladrift.bloodmoon/cpu.txt`.
+- **CPU.** 1.5.0 was switched off on the device ("over its CPU"): with no CPU figure Opus held it to a tenth of the
+  audio block, and its 16 KB sine table in ordinary memory cost far more than that. 1.5.1 keeps a 4 KB quarter of the
+  table (the same values) in the OP-1's fast memory, skips what is silent, and carries a provisional figure of 120,000
+  cycles in `noladrift.bloodmoon/cpu.txt`. It still needs measuring on a device: developer mode on, six-voice chords
+  with every knob up, then read "audio: worst N" from its details (**orange** push on its row) and put `cycles N` in
+  `cpu.txt`.
 
 ## How it is built
 
