@@ -12,6 +12,13 @@
 | v1.1 | 21 Oct 2026 | +6 dB louder, old screen | Not reported separately |
 | v1.0 | 20 Oct 2026 | First release | Works |
 
+## Docs: presets on Opus (2 Nov 2026)
+
+The docs said the eight presets load on Opus. That was based on the Opus kit's documented type bridge and was never
+tested, and Opus's author has said such sounds do not load. The docs and the zip's `INSTALL.md` now say the presets are
+for Hundekraft and op1r, and that Opus presets wait on the format Opus saves. No plugin file or preset changed. The 1.5.2
+zip was rebuilt with only the new `INSTALL.md`.
+
 ## Repository reorganisation (2 Nov 2026)
 
 No plugin file or preset changed. `download/` and `releases/` hold the same files as before, and the 1.5.2 zip

@@ -39,8 +39,10 @@ envelope, as before.
 
 ## What is different from the op1r version
 
-- **Your sounds still load.** The engine claims op1r's sound type `bloodmoon`, so the v1.2 and v1.3 presets and
-  sounds you saved with the op1r build load as this engine.
+- **Presets: probably not yet.** The engine claims op1r's sound type `bloodmoon`, which the kit says makes op1r
+  sounds load as this engine. Opus's author has said such sounds do not load, so the presets in `presets/bloodmoon/`
+  are probably Hundekraft and op1r only. Opus presets need the format Opus saves (`iter`, a number in knob 4, an
+  `"opus"` member), read from one bloodmoon sound saved on an OP-1.
 - **Don't load both.** If you also put `bloodmoon.op1p` in front of Opus's bridge, the two claim the same type, and
   Opus refuses the one that loads later.
 - **Velocity is applied once.** Under Opus the OS scales each voice by velocity. The op1r build also scaled by it
@@ -88,12 +90,12 @@ it equals the released one, and attaches it to the run.
 OPUS_SDK=path/to/opus/plugin-kit/sdk platforms/opus/tests/run.sh          # against v1.3, sound and screen
 SANITIZE="-fsanitize=address,undefined -fno-sanitize-recover=all" OPUS_SDK=... platforms/opus/tests/run.sh
 OPUS_SDK=... OP1_BFIN_TOOLCHAIN=... platforms/opus/tests/bench_bfin.sh 801f8a7   # cycles, beside 1.5.1 (needs bfin-elf-run)
-python3 tools/preset-validation/validate_presets.py --render              # the presets it loads
+python3 tools/preset-validation/validate_presets.py --render              # the op1r/Hundekraft presets
 ```
 
 ## Limitations
 
 - Not yet confirmed on a real OP-1; the CPU figure is provisional.
 - The highest notes lose up to 0.8 dB of their top harmonics (half-rate computation).
-- The presets load through the `type: "bloodmoon"` bridge of core 2.6; not yet confirmed on a device.
+- No Opus presets yet (see above).
 - Do not load it beside op1r's `bloodmoon.op1p` through Opus's bridge: both claim the same sound type.

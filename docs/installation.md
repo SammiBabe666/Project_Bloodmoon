@@ -10,8 +10,9 @@ folder) in disk mode first, start with the volume low, and install only one plug
 | Hundekraft 3.0+ | `hundekraft/bloodmoon.knl` | the Hundekraft Workshop's **Your plugins**, then **Update OP-1** |
 | op1r with the plugin loader | `releases/v1.3/bloodmoon.op1p` (not in the zip) | the Workshop, or `/yaffs2/plugins/` |
 
-**Presets:** in disk mode, copy the folder `presets/bloodmoon/` into the OP-1's `synth/` folder. The same eight files
-work with every plugin file above. On an OP-1 without the plugin, they load as the stock iter engine.
+**Presets:** in disk mode, copy the folder `presets/bloodmoon/` into the OP-1's `synth/` folder. They are for
+Hundekraft and op1r. On an OP-1 without the plugin, they load as the stock iter engine. On **Opus** they probably do
+not load (see [platform-compatibility.md](platform-compatibility.md)).
 
 **Recovery:** on Opus, hold **Stop** while switching on to start with no plugins. On Hundekraft, remove the plugin
 in the Workshop and update again.

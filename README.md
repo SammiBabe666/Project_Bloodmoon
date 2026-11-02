@@ -15,7 +15,8 @@ A custom synth engine plugin by Nola Drift, made for gothic ambient, witch house
 |---|---|
 | **Opus 2** (LizardMan's plugin manager, core 2.6 or newer) | `opus/bloodmoon.opmod`, which you copy into the OP-1's mods folder |
 | **Hundekraft 3.0** or newer | `hundekraft/bloodmoon.knl`, which you add in the Hundekraft Workshop |
-| Either one | `presets/bloodmoon/` (8 presets) and `INSTALL.md` (the steps for both) |
+| Hundekraft (and op1r) | `presets/bloodmoon/` (8 presets; they probably do not load on Opus yet) |
+| Either one | `INSTALL.md` (the steps for both) |
 
 Both play v1.3's sound, knobs and screen (the Opus build computes it at half rate to fit the OP-1's processor, within
 1 dB of v1.3). Neither has been confirmed on a real OP-1 yet, so please report how it goes. The last version tested on hardware is the v1.3 op1r file in [`releases/v1.3/`](releases/v1.3/).
@@ -34,7 +35,7 @@ BLOODMOON runs on the original OP-1 (firmware 246) under three firmware mods. Ea
 | Hundekraft 3.0+ | [`platforms/hundekraft/`](platforms/hundekraft/) | `bloodmoon.knl` (1.4) | Not yet tested on hardware |
 
 The sound engine's source of truth is `platforms/op1/src/plugins/bloodmoon/`. Hundekraft builds from that same code.
-Opus has its own port, which is tested against it. The presets in `presets/bloodmoon/` serve all three. See
+Opus has its own port, which is tested against it. The presets in `presets/bloodmoon/` are for op1r and Hundekraft; Opus presets are not made yet. See
 [docs/architecture.md](docs/architecture.md) and [docs/platform-compatibility.md](docs/platform-compatibility.md).
 
 ---
@@ -71,7 +72,7 @@ Each knob's name and its value (0 to 100) are drawn in blackletter on both sides
 
 ## Presets
 
-Eight presets are in `presets/bloodmoon/`. Back up your OP-1's `synth` folder first, then in disk mode copy the whole `bloodmoon` folder into `synth`. On an OP-1 without the plugin, they load as the stock iter engine.
+Eight presets are in `presets/bloodmoon/`. Back up your OP-1's `synth` folder first, then in disk mode copy the whole `bloodmoon` folder into `synth`. On an OP-1 without the plugin, they load as the stock iter engine. They are for the op1r and Hundekraft builds; on Opus they probably do not load yet (see [docs/preset-guide.md](docs/preset-guide.md#opus)).
 
 | Preset | Blood | Eclipse | Haunting | Moonrise | Character |
 |---|---|---|---|---|---|
@@ -104,7 +105,7 @@ Back up your OP-1 (tapes and synth presets) in disk mode first, and start with t
 | `platforms/op1/` | The original op1r build: engine, screen code and artwork (the source of truth), host harness, tools. |
 | `platforms/opus/` | The Opus 2 port (`src/noladrift.bloodmoon/`), its tests and cycle benchmark. |
 | `platforms/hundekraft/` | The Hundekraft manifest (`src/plugin.json`); its code is the OP-1 source. |
-| `presets/bloodmoon/` | The 8 presets, for every platform. |
+| `presets/bloodmoon/` | The 8 presets (op1r and Hundekraft format). |
 | `shared/` | The preset specification (`preset-specifications/`) and the sound's design notes. |
 | `tools/` | The preset validator and the build helpers. |
 | `releases/` | Every released plugin file, with the source revision that made it ([releases/README.md](releases/README.md)). |
