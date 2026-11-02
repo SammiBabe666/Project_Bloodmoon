@@ -1,7 +1,7 @@
 # Preset guide
 
 Eight factory sounds, one file each, in [`presets/bloodmoon/`](../presets/bloodmoon/). They are op1r-format sounds
-(`type: "bloodmoon"`) for the op1r and Hundekraft builds. Opus presets are not made yet (see below). Their settings live in one place,
+(`type: "bloodmoon"`) for the op1r and Hundekraft builds. Opus has its own set (see below). Their settings live in one place,
 [`shared/preset-specifications/bloodmoon-presets.json`](../shared/preset-specifications/bloodmoon-presets.json), and
 the files are generated from it.
 
@@ -28,9 +28,20 @@ problem. "Hollow saint" keeps its name, because renaming would change the file t
 
 Opus saves an engine's sound as the OS's `iter` with the engine's number in knob 4 and an `"opus"` member naming the
 plugin. The Opus kit (30 Oct 2026) says a sound carrying another firmware's `"type"` loads as the engine that claims
-it, but Opus's author said on 1 Nov 2026 that such sounds do not load (as recorded in Project Erdtree's notes). Neither
-has been tried with BLOODMOON. Opus presets can be generated from the same specification once the format is read from
-one bloodmoon sound saved on an OP-1 with Opus.
+it, but Opus's author said on 1 Nov 2026 that such sounds do not load (as recorded in Project Erdtree's notes). So
+Opus has its own eight presets in [`platforms/opus/presets/`](../platforms/opus/presets/), one folder each
+(`cathedral/`, `funeral-bell/`, ...). Each holds `sound.json`, generated from the same specification, with every value
+checked against the factory ranges the OS accepts (a value outside them makes the OP-1 import the file as a plain
+sample): attack, decay and release 64 to 16320, the delay's four parameters inside the factory delay's ranges, octave
+-1 to 1. All eight already fit, so the Opus sounds are the same sounds.
+
+The kit does not give the `"opus"` member's layout or the number the core puts in knob 4, so the `.aif` files are not
+guessed. One bloodmoon sound saved on an OP-1 with Opus is enough:
+
+```
+python3 platforms/opus/presets/presets.py learn "saved sound.aif"   # reads its type, knob 4 and "opus" member
+python3 platforms/opus/presets/presets.py aif                       # writes the eight .aif files
+```
 
 ## Adding a ninth preset, or changing one
 
@@ -38,7 +49,8 @@ one bloodmoon sound saved on an OP-1 with Opus.
    characters, file `<name with _>.aif`, knobs and envelope 0-32767, octave -2 to 2, delay null or four values, and a
    one-line character). For a ninth sound, also raise `COUNT` in `tools/preset-validation/validate_presets.py`.
 2. Generate the files: `python3 platforms/op1/src/tests/make_presets.py` (writes `presets/bloodmoon/`, needs a C
-   compiler for the preview). This rewrites all eight. To keep the shipped files untouched, write to another folder
+   compiler for the preview) and `python3 platforms/opus/presets/presets.py sync` (the Opus `sound.json` files; then
+   `aif` once the Opus format is known). This rewrites all eight. To keep the shipped files untouched, write to another folder
    and copy only the new one.
 3. Validate: `python3 tools/preset-validation/validate_presets.py --render`.
 4. Listen: `python3 platforms/op1/src/harness/audio.py bloodmoon --knobs B,E,H,M`.

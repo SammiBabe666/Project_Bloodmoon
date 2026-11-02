@@ -1,0 +1,18 @@
+{
+  "name": "hollow saint",
+  "description": "BLOOD at zero: the hollow odd-harmonic organ, a restrained bell, little movement, dry.",
+  "knobs": {
+    "blood": 0,
+    "eclipse": 12000,
+    "haunting": 3500,
+    "moonrise": 6000
+  },
+  "adsr": [
+    576,
+    6592,
+    24000,
+    9000
+  ],
+  "fx": null,
+  "octave": 0
+}

@@ -2,6 +2,7 @@
 
 | Version | Date | In one line | On a real OP-1 |
 |---|---|---|---|
+| Opus presets | 2 Nov 2026 | The 8 sounds as Opus presets (`sound.json`; `.aif` once Opus's format is read from a saved sound) | Not yet tested |
 | Repository 2026-11 | 2 Nov 2026 | Reorganised into `platforms/`, preset validator, tests for all three platforms in CI. No plugin file changed | (no new files) |
 | v1.5.2 | 2 Nov 2026 | Opus build: the voice costs a quarter of 1.5.1's CPU, measured | Not yet tested |
 | v1.5.1 | 1 Nov 2026 | Opus build: sine table in fast memory | Failed: switched off after three notes, organ not heard |
@@ -11,6 +12,14 @@
 | v1.2 | 21 Oct 2026 | Knob names and values on the screen, 8 presets, +6 dB | Screen shows; crackled on the speaker |
 | v1.1 | 21 Oct 2026 | +6 dB louder, old screen | Not reported separately |
 | v1.0 | 20 Oct 2026 | First release | Works |
+
+## Opus presets (2 Nov 2026)
+
+The eight sounds as Opus presets, in `platforms/opus/presets/<name>/sound.json`, generated from the shared
+specification by `platforms/opus/presets/presets.py` and checked against the OS's factory ranges (all eight fit
+unchanged). Their `.aif` files are not written yet: the kit does not document how Opus saves an engine's sound, so
+`presets.py learn` reads it from one bloodmoon sound saved on an OP-1 with Opus, and `presets.py aif` then writes all
+eight. The preset validator and CI check the Opus set too. No plugin file changed.
 
 ## Docs: presets on Opus (2 Nov 2026)
 

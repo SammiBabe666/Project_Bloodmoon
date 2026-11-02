@@ -1,0 +1,26 @@
+{
+  "name": "sunken pipes",
+  "description": "Low and slow: thick pipes an octave down, the slowest drift, a faint bell, a long delay.",
+  "knobs": {
+    "blood": 26000,
+    "eclipse": 4000,
+    "haunting": 13000,
+    "moonrise": 1500
+  },
+  "adsr": [
+    2048,
+    6592,
+    32767,
+    14000
+  ],
+  "fx": {
+    "type": "delay",
+    "params": [
+      9216,
+      22000,
+      6000,
+      15000
+    ]
+  },
+  "octave": -1
+}

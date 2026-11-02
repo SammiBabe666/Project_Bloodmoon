@@ -1,0 +1,18 @@
+{
+  "name": "moon tremor",
+  "description": "HAUNTING and MOONRISE near full: fast, deep, deliberately unstable pitch movement.",
+  "knobs": {
+    "blood": 18000,
+    "eclipse": 16000,
+    "haunting": 32767,
+    "moonrise": 30000
+  },
+  "adsr": [
+    64,
+    6592,
+    30000,
+    6000
+  ],
+  "fx": null,
+  "octave": 0
+}

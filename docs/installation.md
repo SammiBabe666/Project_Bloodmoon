@@ -12,7 +12,8 @@ folder) in disk mode first, start with the volume low, and install only one plug
 
 **Presets:** in disk mode, copy the folder `presets/bloodmoon/` into the OP-1's `synth/` folder. They are for
 Hundekraft and op1r. On an OP-1 without the plugin, they load as the stock iter engine. On **Opus** they probably do
-not load (see [platform-compatibility.md](platform-compatibility.md)).
+not load; Opus's own presets are in `platforms/opus/presets/` and wait on one sound saved on Opus (see
+[preset-guide.md](preset-guide.md#opus)).
 
 **Recovery:** on Opus, hold **Stop** while switching on to start with no plugins. On Hundekraft, remove the plugin
 in the Workshop and update again.

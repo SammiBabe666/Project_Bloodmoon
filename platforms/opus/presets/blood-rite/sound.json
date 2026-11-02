@@ -1,0 +1,26 @@
+{
+  "name": "blood rite",
+  "description": "Everything up: the thickest stack, a forceful bell attack, medium vibrato, delay.",
+  "knobs": {
+    "blood": 32767,
+    "eclipse": 26000,
+    "haunting": 16000,
+    "moonrise": 12000
+  },
+  "adsr": [
+    64,
+    12352,
+    20000,
+    12000
+  ],
+  "fx": {
+    "type": "delay",
+    "params": [
+      7168,
+      16000,
+      10000,
+      13000
+    ]
+  },
+  "octave": 0
+}
