@@ -1,11 +1,11 @@
-# BLOODMOON 1.4 for Hundekraft (.knl)
+# BLOODMOON for Hundekraft 3.0 (.knl, version 1.4)
 
-> **Experimental: not yet tested on a real OP-1.** The stable version is v1.3 (`bloodmoon.op1p` at the top of this repository).
+> **Experimental: not yet tested on a real OP-1.** The stable version is v1.3 (`releases/v1.3/bloodmoon.op1p`, the op1r build).
 
 `bloodmoon.knl` is BLOODMOON packed as a Hundekraft 3.0 kennel plugin. The sound, the four knobs and the cathedral screen are the same as v1.3; only the file format changed (v1.3 was an op1r `.op1p`).
 
 - Needs: an original OP-1 running Hundekraft 3.0 or newer (built against the 3.0.3 SDK).
-- File: `bloodmoon.knl`, 46,148 bytes, SHA-256 `e8b8a691bdfbdb6322f3876a34399a1eb101859568fadb09ecdf7cd21eb41201`.
+- File: `bloodmoon.knl` (in [the download](../../download/bloodmoon-1.5.2.zip) as `hundekraft/bloodmoon.knl`, and in [`releases/v1.4-knl/`](../../releases/v1.4-knl/)), 46,148 bytes, SHA-256 `e8b8a691bdfbdb6322f3876a34399a1eb101859568fadb09ecdf7cd21eb41201`.
 - Plugin ID: `bloodmoon` (synth). Author Nola Drift, version 1.4. Claims no exclusive controls.
 
 ## Install
@@ -26,16 +26,37 @@ If you already installed the v1.3 `bloodmoon.op1p`, remove it from Your plugins 
 | White | HAUNTING | Vibrato depth (fades in after the attack) plus slight pitch instability |
 | Orange | MOONRISE | Vibrato speed, about 0.15 Hz to 9 Hz |
 
-The v1.3 presets (`presets/bloodmoon/`) use the same engine name and knob meanings.
+The presets in `presets/bloodmoon/` (at the top of the repository) use the same engine name and knob meanings.
 
-## Rebuild from source
+## Where the source is
 
-1. Get the matching SDK from the Workshop: `source/hundekraft-3.0.3-source.tar.gz`, unpack, `cd ext/kennel`.
-2. Copy this repository's `knl/source/` folder to `synth_sdk/plugins/bloodmoon/`.
+This folder holds only `src/plugin.json`, the kennel manifest (version, order, loadable, claims). The engine, screen
+code and art are the OP-1 build's own files in [`platforms/op1/src/plugins/bloodmoon/`](../op1/src/plugins/bloodmoon/),
+so a fix there reaches both. `tools/build-platform/stage-hundekraft.sh` puts the two together into
+`platforms/hundekraft/build/bloodmoon/`.
+
+## Rebuild
+
+1. `tools/build-platform/stage-hundekraft.sh` (writes `platforms/hundekraft/build/bloodmoon/`).
+2. Get the matching SDK from the Workshop: `source/hundekraft-3.0.3-source.tar.gz`, unpack, `cd ext/kennel`, and copy
+   the staged folder to `synth_sdk/plugins/bloodmoon/`.
 3. With a Blackfin `bfin-elf-gcc` 13.3 toolchain on PATH:
    `python3 tools/kennel/pack.py synth_sdk/plugins/bloodmoon -o build/bloodmoon.knl`
 
-The build is reproducible: the same SDK and compiler give the same bytes and hash as above.
+The released file was built this way from the same C and SVG (then in `knl/source/`, byte-identical to the OP-1
+source). The build is reproducible: the same SDK and compiler give the same bytes and hash as above. This was not
+re-run after the move to `platforms/`, because the SDK is not part of this repository.
+
+## Validate
+
+`platforms/hundekraft/tests/run.sh` stages the folder, checks the manifest (name, kind, symbol, defaults the same as the
+OP-1 build, no claims) and renders the engine through the OP-1 host harness with sanitizers. The presets are checked by
+`tools/preset-validation/validate_presets.py`.
+
+## Limitations
+
+- Not yet loaded on a real OP-1 or the Hundekraft emulator.
+- Install only one of the op1r `.op1p` and this `.knl`: both use the ID `bloodmoon`.
 
 ## What was checked
 

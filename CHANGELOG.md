@@ -2,6 +2,7 @@
 
 | Version | Date | In one line | On a real OP-1 |
 |---|---|---|---|
+| Repository 2026-11 | 2 Nov 2026 | Reorganised into `platforms/`, preset validator, tests for all three platforms in CI. No plugin file changed | (no new files) |
 | v1.5.2 | 2 Nov 2026 | Opus build: the voice costs a quarter of 1.5.1's CPU, measured | Not yet tested |
 | v1.5.1 | 1 Nov 2026 | Opus build: sine table in fast memory | Failed: switched off after three notes, organ not heard |
 | v1.5 | 31 Oct 2026 | A ready-made download zip: the Opus 2 `.opmod` and the Hundekraft `.knl`, nothing to build | Not yet tested |
@@ -11,16 +12,41 @@
 | v1.1 | 21 Oct 2026 | +6 dB louder, old screen | Not reported separately |
 | v1.0 | 20 Oct 2026 | First release | Works |
 
+## Repository reorganisation (2 Nov 2026)
+
+No plugin file or preset changed. `download/` and `releases/` hold the same files as before, and the 1.5.2 zip
+rebuilds byte for byte with `tools/build-platform/make_zip.py`.
+
+- **Moved** (history kept): `src/` to `platforms/op1/src/`, `opus/` to `platforms/opus/` (the plugin folder is now
+  `platforms/opus/src/noladrift.bloodmoon/`), `knl/` to `platforms/hundekraft/` (manifest in `src/plugin.json`, guide in
+  `README.md`), `knl/bloodmoon.knl` to `releases/v1.4-knl/`, and the preview images to `media/`. The presets stay in
+  `presets/bloodmoon/`, one set for all three platforms.
+- **Removed duplicates:** the Hundekraft folder's copies of `bloodmoon.c`, `moon.c` and `bloodmoon.svg` were
+  byte-identical to the OP-1 source. `tools/build-platform/stage-hundekraft.sh` now builds the kennel folder from that
+  source. The Opus folder's copy of `bloodmoon.svg` was also removed: `make_headers.py` reads the OP-1 one, and the
+  generated art is unchanged.
+- **Presets:** the eight sounds' settings are now in `shared/preset-specifications/bloodmoon-presets.json`.
+  `make_presets.py` reads them, and `tools/preset-validation/validate_presets.py` checks the specification, the files,
+  the format, the ranges, duplicates, the install path and the rendered levels. The audit kept all eight as they
+  were.
+- **Tests:** `platforms/op1/tests/run.sh` and `platforms/hundekraft/tests/run.sh` are new. GitHub runs all three
+  platforms' tests and the preset check on every push. A manual **Build Opus plugin** workflow builds and benchmarks
+  the `.opmod` without committing it.
+- **Docs:** a README per platform, plus `docs/architecture.md`, `installation.md`, `preset-guide.md`,
+  `platform-compatibility.md`, `development.md`, `releases/README.md` (which commit made each file) and
+  `shared/design-notes/sound-identity.md`.
+- `preview.py` no longer hard-codes a browser path.
+
 ## v1.5.2: Opus voice rebuilt for the OP-1's processor
 
-On a real OP-1, 1.5.1 was still switched off for its CPU after three notes, and only the bell was heard. A Blackfin simulator (GDB's, now run on every change, `opus/tests/bench_bfin.sh`) showed why: 1.5.1's six voices cost 247,335 cycles a block, about 41,000 a voice, so three voices went past the core's limit (25 % over the 120,000-cycle figure). 1.5.2's six voices cost 68,207 in the same test:
+On a real OP-1, 1.5.1 was still switched off for its CPU after three notes, and only the bell was heard. A Blackfin simulator (GDB's, `platforms/opus/tests/bench_bfin.sh`, run by the manual Build Opus plugin workflow) showed why: 1.5.1's six voices cost 247,335 cycles a block, about 41,000 a voice, so three voices went past the core's limit (25 % over the 120,000-cycle figure). 1.5.2's six voices cost 68,207 in the same test:
 
 - the sound is computed at 44.1 kHz, the OS's own rate, and each sample between is the mean of its neighbours;
 - the vibrato and instability LFOs are read once a block (689 times a second) instead of every sample;
 - the 2nd, 3rd and 4th harmonics come from the fundamental's sine and cosine by the multiple-angle formulas: two table reads instead of four, the same waveform;
 - 16-bit multiplies, no branches and no clamp per sample, no library division, and the organ and bell computed in separate passes so the processor never runs out of registers.
 
-The sound stays close to v1.3: every note within 1 dB, and at the computed points the difference is 40 to 69 dB below the sound (`opus/tests/run.sh`, now also run with sanitizers). The highest notes lose up to 0.8 dB of their top harmonics. The CPU figure stays a provisional 120,000 until it is measured on a device.
+The sound stays close to v1.3: every note within 1 dB, and at the computed points the difference is 40 to 69 dB below the sound (`platforms/opus/tests/run.sh`, now also run with sanitizers). The highest notes lose up to 0.8 dB of their top harmonics. The CPU figure stays a provisional 120,000 until it is measured on a device.
 
 The missing organ is not yet explained. The organ and bell read the same table, so the likeliest cause is the slot's T2 envelope: a new engine keeps the previous sound's, and a short one lets only the attack through, where the bell is loudest. Please test with a long sustain.
 
