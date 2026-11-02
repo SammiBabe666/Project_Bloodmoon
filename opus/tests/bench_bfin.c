@@ -116,7 +116,7 @@ void bench_c(void)
 __asm__(".text\n"
         ".global bench_start\n"
         "bench_start:\n"
-        "    P0.L = lo(_bench_stack_top); P0.H = hi(_bench_stack_top);\n"
+        "    P0.L = _bench_stack_top; P0.H = _bench_stack_top;\n"
         "    P0 = [P0];\n"
         "    SP = P0; FP = P0;\n"
         "    call _bench_c;\n");
