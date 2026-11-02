@@ -1,0 +1,26 @@
+{
+  "name": "witch choir",
+  "description": "Strong HAUNTING: a wavering, vocal organ with a soft attack and a faint bell.",
+  "knobs": {
+    "blood": 20000,
+    "eclipse": 9000,
+    "haunting": 22000,
+    "moonrise": 7500
+  },
+  "adsr": [
+    3000,
+    6592,
+    28000,
+    12736
+  ],
+  "fx": {
+    "type": "delay",
+    "params": [
+      6144,
+      18000,
+      8000,
+      12000
+    ]
+  },
+  "octave": 0
+}

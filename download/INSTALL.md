@@ -45,9 +45,9 @@ file in disk mode.
 In disk mode, copy the `presets/bloodmoon` folder into the OP-1's `synth` folder. Back up `synth` first.
 
 These presets are for **Hundekraft** (and the older op1r plugin). On **Opus** they probably do not load: Opus's
-author has said sounds tagged with an engine type this way do not load on Opus. Opus presets need the format Opus
-itself saves, which is not documented yet. If you save a bloodmoon sound on Opus and send us the file, we can make
-Opus presets from it.
+author has said sounds tagged with an engine type this way do not load on Opus. The Opus presets are made (the same eight sounds) but
+their files need the format Opus itself saves, which is not documented. Save any bloodmoon sound on Opus and send us
+the `.aif` from the OP-1's `synth` folder: the Opus preset files are generated from it.
 
 ## The knobs
 

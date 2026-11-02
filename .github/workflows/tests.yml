@@ -21,6 +21,8 @@ jobs:
           python-version: '3.12'
       - name: Presets (specification, files, rendered levels)
         run: python tools/preset-validation/validate_presets.py --render
+      - name: Opus presets (sound.json up to date with the specification)
+        run: python platforms/opus/presets/presets.py sync && git diff --exit-code -- platforms/opus/presets
       - name: OP-1 (op1r) build
         run: platforms/op1/tests/run.sh
       - name: Opus build, generated headers up to date

@@ -1,0 +1,26 @@
+{
+  "name": "cathedral",
+  "description": "The signature sound: dark organ, a medium bell strike that sinks into it, slow restrained vibrato.",
+  "knobs": {
+    "blood": 14000,
+    "eclipse": 20000,
+    "haunting": 7000,
+    "moonrise": 9000
+  },
+  "adsr": [
+    1088,
+    6592,
+    26000,
+    12000
+  ],
+  "fx": {
+    "type": "delay",
+    "params": [
+      8192,
+      20000,
+      9000,
+      14000
+    ]
+  },
+  "octave": 0
+}

@@ -39,10 +39,11 @@ envelope, as before.
 
 ## What is different from the op1r version
 
-- **Presets: probably not yet.** The engine claims op1r's sound type `bloodmoon`, which the kit says makes op1r
-  sounds load as this engine. Opus's author has said such sounds do not load, so the presets in `presets/bloodmoon/`
-  are probably Hundekraft and op1r only. Opus presets need the format Opus saves (`iter`, a number in knob 4, an
-  `"opus"` member), read from one bloodmoon sound saved on an OP-1.
+- **Presets: its own set, in [`presets/`](presets/).** The presets in `presets/bloodmoon/` name the engine by
+  `"type": "bloodmoon"`, and Opus's author has said such sounds do not load on Opus. Opus keeps an engine's sound as
+  `iter` with a number in knob 4 and an `"opus"` member, a layout the kit does not give. So the eight Opus presets are
+  ready as `sound.json` (every value, checked against the OS's factory ranges), and their `.aif` files are written
+  once one bloodmoon sound saved on an OP-1 with Opus has been read (see [presets/README.md](presets/README.md)).
 - **Don't load both.** If you also put `bloodmoon.op1p` in front of Opus's bridge, the two claim the same type, and
   Opus refuses the one that loads later.
 - **Velocity is applied once.** Under Opus the OS scales each voice by velocity. The op1r build also scaled by it
@@ -90,12 +91,13 @@ it equals the released one, and attaches it to the run.
 OPUS_SDK=path/to/opus/plugin-kit/sdk platforms/opus/tests/run.sh          # against v1.3, sound and screen
 SANITIZE="-fsanitize=address,undefined -fno-sanitize-recover=all" OPUS_SDK=... platforms/opus/tests/run.sh
 OPUS_SDK=... OP1_BFIN_TOOLCHAIN=... platforms/opus/tests/bench_bfin.sh 801f8a7   # cycles, beside 1.5.1 (needs bfin-elf-run)
-python3 tools/preset-validation/validate_presets.py --render              # the op1r/Hundekraft presets
+python3 tools/preset-validation/validate_presets.py --render              # both preset sets
+python3 platforms/opus/presets/presets.py check                          # the Opus presets only
 ```
 
 ## Limitations
 
 - Not yet confirmed on a real OP-1; the CPU figure is provisional.
 - The highest notes lose up to 0.8 dB of their top harmonics (half-rate computation).
-- No Opus presets yet (see above).
+- The Opus presets have no `.aif` files yet: they need one bloodmoon sound saved on Opus (see above).
 - Do not load it beside op1r's `bloodmoon.op1p` through Opus's bridge: both claim the same sound type.

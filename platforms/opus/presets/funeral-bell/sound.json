@@ -1,0 +1,26 @@
+{
+  "name": "funeral bell",
+  "description": "ECLIPSE at full: a loud, long dissonant bell over a thin organ that decays to a low sustain.",
+  "knobs": {
+    "blood": 9000,
+    "eclipse": 32767,
+    "haunting": 2500,
+    "moonrise": 4000
+  },
+  "adsr": [
+    64,
+    9000,
+    6000,
+    14000
+  ],
+  "fx": {
+    "type": "delay",
+    "params": [
+      10240,
+      24000,
+      12000,
+      16000
+    ]
+  },
+  "octave": 0
+}

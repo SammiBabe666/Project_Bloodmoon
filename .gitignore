@@ -5,3 +5,4 @@ platforms/opus/tests/out/
 platforms/opus/tests/out-bfin/
 platforms/hundekraft/build/
 build/
+platforms/opus/presets/__pycache__/

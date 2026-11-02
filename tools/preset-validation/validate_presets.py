@@ -10,6 +10,8 @@ Checks, for shared/preset-specifications/bloodmoon-presets.json and presets/bloo
   - the files: exactly the specified ones, each an AIFF-C (FORM/AIFC) with COMM, APPL and SSND chunks, mono 16-bit
     44.1 kHz, an APPL chunk "op-1" + JSON whose type is the engine's ("bloodmoon"), and whose name, knobs (the four
     engine knobs, the other four 0), envelope, octave and delay equal the specification's;
+  - the Opus set (platforms/opus/presets/presets.py check): its sound.json files equal the specification and lie
+    inside the OS's factory ranges;
   - the install paths the docs give: the folder is presets/bloodmoon/, copied into the OP-1's synth/ folder.
 With --render it also renders every sound's knobs through the OP-1 host harness (platforms/op1/src/harness/audio.py,
 needs a C compiler) and checks it is not silent, does not reach full scale, and that the levels lie within 6 dB.
@@ -23,6 +25,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 SPEC = os.path.join(ROOT, 'shared', 'preset-specifications', 'bloodmoon-presets.json')
 PRESETS = os.path.join(ROOT, 'presets', 'bloodmoon')
 HARNESS = os.path.join(ROOT, 'platforms', 'op1', 'src', 'harness', 'audio.py')
+OPUS_PRESETS = os.path.join(ROOT, 'platforms', 'opus', 'presets', 'presets.py')
 COUNT = 8
 
 errors = []
@@ -173,6 +176,10 @@ def main():
             levels.append(db)
         if levels and max(levels) - min(levels) > 6:
             fail(f'render: levels span {max(levels) - min(levels):.1f} dB, more than 6')
+    r = subprocess.run([sys.executable, OPUS_PRESETS, 'check'], capture_output=True, text=True)
+    print('opus:', (r.stdout or r.stderr).strip())
+    if r.returncode:
+        fail('the Opus presets (platforms/opus/presets/) do not match the specification')
     print(f'{len(sounds)} sounds, {len(have)} files: ' + ('PASS' if not errors else f'{len(errors)} problem(s)'))
     return 1 if errors else 0
 
