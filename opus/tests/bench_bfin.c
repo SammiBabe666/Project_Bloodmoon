@@ -41,7 +41,7 @@ static int neng;
 int opus_engine_add(struct opl_self *self, const struct opus_engine *e) { (void)self; engs[neng++] = e; return 0x1234; }
 int opus_art_text(struct opl_self *self, const char *name, const char *svg, unsigned len)
 { (void)self; (void)name; (void)svg; (void)len; return 0; }
-static short fast_mem[2][2052] __attribute__((aligned(32)));
+static short fast_mem[2][2200] __attribute__((aligned(32)));
 static int nfast;
 void *opus_fast(struct opl_self *self, unsigned bytes) { (void)self; return bytes <= sizeof fast_mem[0] ? fast_mem[nfast++] : 0; }
 void opus_log(struct opl_self *self, const char *t) { (void)self; put(t); put("\n"); }
