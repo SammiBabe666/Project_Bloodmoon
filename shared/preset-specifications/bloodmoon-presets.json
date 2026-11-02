@@ -1,0 +1,183 @@
+{
+  "about": "The eight BLOODMOON factory sounds: the one source of truth. platforms/op1/src/tests/make_presets.py writes presets/bloodmoon/*.aif from this file, and tools/preset-validation/validate_presets.py checks the files against it. Knobs are 0..32767: blue BLOOD, green ECLIPSE, white HAUNTING, orange MOONRISE. Envelope values are the OP-1's T2 attack, decay, sustain, release (0..32767). octave is the OP-1's octave shift. delay is the OP-1 delay effect's four parameters, or null for the effect off.",
+  "engine_type": "bloodmoon",
+  "sounds": [
+    {
+      "name": "cathedral",
+      "file": "cathedral.aif",
+      "character": "The signature sound: dark organ, a medium bell strike that sinks into it, slow restrained vibrato.",
+      "knobs": {
+        "blood": 14000,
+        "eclipse": 20000,
+        "haunting": 7000,
+        "moonrise": 9000
+      },
+      "envelope": {
+        "attack": 1088,
+        "decay": 6592,
+        "sustain": 26000,
+        "release": 12000
+      },
+      "octave": 0,
+      "delay": [
+        8192,
+        20000,
+        9000,
+        14000
+      ]
+    },
+    {
+      "name": "funeral bell",
+      "file": "funeral_bell.aif",
+      "character": "ECLIPSE at full: a loud, long dissonant bell over a thin organ that decays to a low sustain.",
+      "knobs": {
+        "blood": 9000,
+        "eclipse": 32767,
+        "haunting": 2500,
+        "moonrise": 4000
+      },
+      "envelope": {
+        "attack": 64,
+        "decay": 9000,
+        "sustain": 6000,
+        "release": 14000
+      },
+      "octave": 0,
+      "delay": [
+        10240,
+        24000,
+        12000,
+        16000
+      ]
+    },
+    {
+      "name": "crypt drone",
+      "file": "crypt_drone.aif",
+      "character": "No bell, a dense dark stack an octave down, slow swell and slow drift.",
+      "knobs": {
+        "blood": 30000,
+        "eclipse": 0,
+        "haunting": 9000,
+        "moonrise": 2500
+      },
+      "envelope": {
+        "attack": 6000,
+        "decay": 8000,
+        "sustain": 32767,
+        "release": 14976
+      },
+      "octave": -1,
+      "delay": null
+    },
+    {
+      "name": "witch choir",
+      "file": "witch_choir.aif",
+      "character": "Strong HAUNTING: a wavering, vocal organ with a soft attack and a faint bell.",
+      "knobs": {
+        "blood": 20000,
+        "eclipse": 9000,
+        "haunting": 22000,
+        "moonrise": 7500
+      },
+      "envelope": {
+        "attack": 3000,
+        "decay": 6592,
+        "sustain": 28000,
+        "release": 12736
+      },
+      "octave": 0,
+      "delay": [
+        6144,
+        18000,
+        8000,
+        12000
+      ]
+    },
+    {
+      "name": "hollow saint",
+      "file": "hollow_saint.aif",
+      "character": "BLOOD at zero: the hollow odd-harmonic organ, a restrained bell, little movement, dry.",
+      "knobs": {
+        "blood": 0,
+        "eclipse": 12000,
+        "haunting": 3500,
+        "moonrise": 6000
+      },
+      "envelope": {
+        "attack": 576,
+        "decay": 6592,
+        "sustain": 24000,
+        "release": 9000
+      },
+      "octave": 0,
+      "delay": null
+    },
+    {
+      "name": "moon tremor",
+      "file": "moon_tremor.aif",
+      "character": "HAUNTING and MOONRISE near full: fast, deep, deliberately unstable pitch movement.",
+      "knobs": {
+        "blood": 18000,
+        "eclipse": 16000,
+        "haunting": 32767,
+        "moonrise": 30000
+      },
+      "envelope": {
+        "attack": 64,
+        "decay": 6592,
+        "sustain": 30000,
+        "release": 6000
+      },
+      "octave": 0,
+      "delay": null
+    },
+    {
+      "name": "sunken pipes",
+      "file": "sunken_pipes.aif",
+      "character": "Low and slow: thick pipes an octave down, the slowest drift, a faint bell, a long delay.",
+      "knobs": {
+        "blood": 26000,
+        "eclipse": 4000,
+        "haunting": 13000,
+        "moonrise": 1500
+      },
+      "envelope": {
+        "attack": 2048,
+        "decay": 6592,
+        "sustain": 32767,
+        "release": 14000
+      },
+      "octave": -1,
+      "delay": [
+        9216,
+        22000,
+        6000,
+        15000
+      ]
+    },
+    {
+      "name": "blood rite",
+      "file": "blood_rite.aif",
+      "character": "Everything up: the thickest stack, a forceful bell attack, medium vibrato, delay.",
+      "knobs": {
+        "blood": 32767,
+        "eclipse": 26000,
+        "haunting": 16000,
+        "moonrise": 12000
+      },
+      "envelope": {
+        "attack": 64,
+        "decay": 12352,
+        "sustain": 20000,
+        "release": 12000
+      },
+      "octave": 0,
+      "delay": [
+        7168,
+        16000,
+        10000,
+        13000
+      ]
+    }
+  ]
+}

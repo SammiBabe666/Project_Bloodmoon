@@ -1,0 +1,34 @@
+name: Tests
+
+# The computer tests of all three platforms and the preset check, on every push and pull request. No Blackfin
+# compiler needed; building the plugin files is the manual "Build Opus plugin" workflow.
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: LizardMan245/opus
+          ref: d9b0d2e6ddf660d7db758f2be9647585fe100ad8
+          path: opus-kit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Presets (specification, files, rendered levels)
+        run: python tools/preset-validation/validate_presets.py --render
+      - name: OP-1 (op1r) build
+        run: platforms/op1/tests/run.sh
+      - name: Opus build, generated headers up to date
+        run: python platforms/opus/make_headers.py && git diff --exit-code -- platforms/opus/src
+      - name: Opus build against v1.3 (with sanitizers)
+        run: |
+          OPUS_SDK=opus-kit/plugin-kit/sdk OUT=$RUNNER_TEMP/opus platforms/opus/tests/run.sh
+          SANITIZE="-fsanitize=address,undefined -fno-sanitize-recover=all" OPUS_SDK=opus-kit/plugin-kit/sdk \
+              OUT=$RUNNER_TEMP/opus-san platforms/opus/tests/run.sh
+      - name: Hundekraft build
+        run: platforms/hundekraft/tests/run.sh

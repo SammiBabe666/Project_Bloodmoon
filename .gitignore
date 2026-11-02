@@ -1,5 +1,7 @@
-src/harness/out/
-src/harness/build/
-src/build/
-opus/tests/out/
-opus/tests/out-bfin/
+platforms/op1/src/harness/out/
+platforms/op1/src/harness/build/
+platforms/op1/src/build/
+platforms/opus/tests/out/
+platforms/opus/tests/out-bfin/
+platforms/hundekraft/build/
+build/

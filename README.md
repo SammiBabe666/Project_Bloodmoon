@@ -3,7 +3,7 @@
 **A dark organ with a haunted bell, for the original Teenage Engineering OP-1.**
 A custom synth engine plugin by Nola Drift, made for gothic ambient, witch house and ruined cathedrals.
 
-![BLOODMOON screen preview: eight states of the moon-and-cathedral screen](bloodmoon_screen_preview.png)
+![BLOODMOON screen preview: eight states of the moon-and-cathedral screen](media/bloodmoon_screen_preview.png)
 
 *Preview drawn on a computer from the plugin's own screen code. The OP-1's display may look slightly different.*
 
@@ -17,11 +17,25 @@ A custom synth engine plugin by Nola Drift, made for gothic ambient, witch house
 | **Hundekraft 3.0** or newer | `hundekraft/bloodmoon.knl`, which you add in the Hundekraft Workshop |
 | Either one | `presets/bloodmoon/` (8 presets) and `INSTALL.md` (the steps for both) |
 
-Both files play the same sound, knobs and screen as v1.3. Neither has been tried on a real OP-1 yet, so please report
-how it goes. The last version tested on hardware is the v1.3 op1r file in [`releases/v1.3/`](releases/v1.3/).
+Both play v1.3's sound, knobs and screen (the Opus build computes it at half rate to fit the OP-1's processor, within
+1 dB of v1.3). Neither has been confirmed on a real OP-1 yet, so please report how it goes. The last version tested on hardware is the v1.3 op1r file in [`releases/v1.3/`](releases/v1.3/).
 See [CHANGELOG.md](CHANGELOG.md).
 
 🎥 [30-second demo](media/bloodmoon_demo.mp4) · [preset tour](media/bloodmoon_preset_tour.mp4) (rendered on a computer from the plugin's own sound and screen code)
+
+## Platforms
+
+BLOODMOON runs on the original OP-1 (firmware 246) under three firmware mods. Each has its own folder:
+
+| Platform | Folder | Plugin file | Status |
+|---|---|---|---|
+| op1r plugin loader | [`platforms/op1/`](platforms/op1/) | `bloodmoon.op1p` (v1.3, in `releases/v1.3/`) | Plays well on a real OP-1 |
+| Opus 2, core 2.6+ | [`platforms/opus/`](platforms/opus/) | `bloodmoon.opmod` (1.5.2) | Not yet confirmed on hardware |
+| Hundekraft 3.0+ | [`platforms/hundekraft/`](platforms/hundekraft/) | `bloodmoon.knl` (1.4) | Not yet tested on hardware |
+
+The sound engine's source of truth is `platforms/op1/src/plugins/bloodmoon/`. Hundekraft builds from that same code.
+Opus has its own port, which is tested against it. The presets in `presets/bloodmoon/` serve all three. See
+[docs/architecture.md](docs/architecture.md) and [docs/platform-compatibility.md](docs/platform-compatibility.md).
 
 ---
 
@@ -87,17 +101,20 @@ Back up your OP-1 (tapes and synth presets) in disk mode first, and start with t
 | File | What it is |
 |---|---|
 | `download/` | The ready-made download: `bloodmoon-1.5.2.zip`, and the same files unzipped. |
-| `opus/` | Source of the Opus 2 build (`noladrift.bloodmoon/`), its computer test and notes. |
-| `knl/` | Source of the Hundekraft build and its notes. |
-| `src/` | The original op1r source (engine, screen code, artwork) and the tools that made the presets and knob panels. |
-| `presets/bloodmoon/` | The 8 presets. |
-| `releases/` | Older plugin files: v1.0, v1.1-louder, v1.2 and v1.3 (the op1r `.op1p` files). |
-| `media/`, `docs/` | Demo videos, release posts and the changelog as a Word document. |
+| `platforms/op1/` | The original op1r build: engine, screen code and artwork (the source of truth), host harness, tools. |
+| `platforms/opus/` | The Opus 2 port (`src/noladrift.bloodmoon/`), its tests and cycle benchmark. |
+| `platforms/hundekraft/` | The Hundekraft manifest (`src/plugin.json`); its code is the OP-1 source. |
+| `presets/bloodmoon/` | The 8 presets, for every platform. |
+| `shared/` | The preset specification (`preset-specifications/`) and the sound's design notes. |
+| `tools/` | The preset validator and the build helpers. |
+| `releases/` | Every released plugin file, with the source revision that made it ([releases/README.md](releases/README.md)). |
+| `docs/` | Architecture, installation, presets, compatibility, development; older release posts. |
+| `media/` | Demo videos and preview images. |
 | `CHANGELOG.md` | What changed in each version. |
 
 ## How it was checked
 
-These checks are for v1.3, the op1r `.op1p` build. The Opus 2 and Hundekraft builds use the same sound and screen code; their own checks are in [`opus/README.md`](opus/README.md) and [`knl/INSTALL.md`](knl/INSTALL.md).
+These checks are for v1.3, the op1r `.op1p` build. The Opus 2 and Hundekraft builds have their own checks in [`platforms/opus/README.md`](platforms/opus/README.md) and [`platforms/hundekraft/README.md`](platforms/hundekraft/README.md). Every push runs the computer tests of all three and the preset check ([docs/development.md](docs/development.md)).
 
 | Check | Result |
 |---|---|
@@ -130,4 +147,4 @@ Please open an issue and tell us your OP-1's firmware version (it should be R246
 - Installed with the [Hundekraft OP-1 Workshop](https://hundekraft.github.io/op1-workshop/index.html).
 - OP-1 is a Teenage Engineering product. This project is not affiliated with or endorsed by Teenage Engineering and contains no Teenage Engineering firmware.
 
-Licensed under **GPL-3.0-or-later with the additional OP-1 firmware permission** described in `LICENSE` and `NOTICE`. If you share the plugin files, share their source too: `opus/`, `knl/` and `src/` in this repository are that source.
+Licensed under **GPL-3.0-or-later with the additional OP-1 firmware permission** described in `LICENSE` and `NOTICE`. If you share the plugin files, share their source too: `platforms/` in this repository is that source.
