@@ -1,4 +1,4 @@
-# BLOODMOON 1.5.1: install
+# BLOODMOON 1.5.2: install
 
 A dark organ with a haunted bell for the **original OP-1** (not the Field), firmware 246. There are two plugin files
 in this zip. Pick the one for the firmware mod your OP-1 runs. You don't need to build anything.
@@ -10,8 +10,9 @@ in this zip. Pick the one for the firmware mod your OP-1 runs. You don't need to
 
 Both play the same sound with the same four knobs and the same moon-and-cathedral screen. Install only one of them.
 
-> Neither file has been tried on a real OP-1 yet. Back up your OP-1 first, start with the volume low, and please
-> report what you see and hear.
+> Neither file has been confirmed on a real OP-1 yet (the earlier Opus builds 1.5.0 and 1.5.1 were switched off for
+> their CPU; 1.5.2 fixes that). Back up your OP-1 first, start with the volume low, and please report what you see and
+> hear.
 
 ## Opus 2: `bloodmoon.opmod`
 
@@ -24,6 +25,11 @@ You need Opus 2 on the OP-1. You can make the update from your own firmware at h
 4. Open Opus's menu, then press **T2** for the mods list. The **bloodmoon** row should say **loaded**. If it gives a
    reason instead, please send it to us.
 5. On a synth slot, press **shift + T1** and choose **bloodmoon**.
+6. A new engine keeps the slot's previous envelope. On **T2**, turn the sustain up so held notes ring, or load one of
+   the presets below.
+
+To help us set its CPU figure: with developer mode on, play six-note chords with all four knobs up for a minute, then
+open the mods list, select **bloodmoon** and press the **orange** encoder. Send us the "audio: worst" number.
 
 If something goes wrong, hold **Stop** while you switch the OP-1 on. It starts with no plugins, so you can delete the
 file in disk mode.
