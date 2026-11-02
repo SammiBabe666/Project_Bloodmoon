@@ -38,7 +38,7 @@ static unsigned swing_q, twinkle_q;        /* phases in 1/256 table steps (8192 
 static void *val_grp[4], *digit[4][3][10]; /* digit[k][0][1] is the hundreds 1, the other [k][0][d] stay 0 */
 static int shown[4];                       /* value on screen per knob, -1 = none yet */
 
-static inline int tsin(int a) { return BM_SINE[a & 8191]; }
+static inline int tsin(int a) { return bm_sin((unsigned)a); }
 static inline int tcos(int a) { return tsin(a + 2048); }
 
 static void *find(void *scr, const char *id) { return fw_svg_node_find(*(void **)scr, id, 0); }

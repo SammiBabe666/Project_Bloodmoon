@@ -9,7 +9,7 @@ A custom synth engine plugin by Nola Drift, made for gothic ambient, witch house
 
 ## Download
 
-**[Download BLOODMOON 1.5 (zip)](download/bloodmoon-1.5.zip)**: everything you need, nothing to build. Inside:
+**[Download BLOODMOON 1.5.2 (zip)](download/bloodmoon-1.5.2.zip)**: everything you need, nothing to build. Inside:
 
 | For | File |
 |---|---|
@@ -72,7 +72,7 @@ Eight presets are in `presets/bloodmoon/`. Back up your OP-1's `synth` folder fi
 
 ## Install
 
-Unzip [the download](download/bloodmoon-1.5.zip) and follow its `INSTALL.md`. In short:
+Unzip [the download](download/bloodmoon-1.5.2.zip) and follow its `INSTALL.md`. In short:
 
 - **Opus 2:** in disk mode, copy `opus/bloodmoon.opmod` into the **mods** folder and restart. The bloodmoon row in
   Opus's mods list (menu, **T2**) should say "loaded". Then choose it with **shift + T1** on a synth slot.
@@ -86,7 +86,7 @@ Back up your OP-1 (tapes and synth presets) in disk mode first, and start with t
 
 | File | What it is |
 |---|---|
-| `download/` | The ready-made download: `bloodmoon-1.5.zip`, and the same files unzipped. |
+| `download/` | The ready-made download: `bloodmoon-1.5.2.zip`, and the same files unzipped. |
 | `opus/` | Source of the Opus 2 build (`noladrift.bloodmoon/`), its computer test and notes. |
 | `knl/` | Source of the Hundekraft build and its notes. |
 | `src/` | The original op1r source (engine, screen code, artwork) and the tools that made the presets and knob panels. |

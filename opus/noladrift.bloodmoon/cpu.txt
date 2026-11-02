@@ -1,0 +1,8 @@
+# BLOODMOON's CPU figure: its worst audio block in cycles, which the build writes into the manifest's cpu line. The
+# core switches the plugin off when it goes 25 % over this in 8 of the last 64 blocks.
+# NOT MEASURED ON A DEVICE YET. On GDB's Blackfin simulator (opus/tests/bench_bfin.sh, six voices, every knob up)
+# 1.5.2's worst block is 68,207 cycles; 1.5.1's was 247,335, which is why the OP-1 switched it off after three notes.
+# The simulator does not count the OP-1's memory timing or the core's work around each voice, so this figure leaves
+# room above it. Replace it with the device's own number: developer mode on, six-voice chords with every knob up,
+# then "audio: worst N" in its details (the orange push on its row in the mods list).
+cycles 120000

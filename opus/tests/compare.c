@@ -1,13 +1,17 @@
 /* Host test of the Opus 2 port (opus/noladrift.bloodmoon) against v1.3 (src/plugins/bloodmoon), on the computer:
- *   1. the same notes, knobs and pitch through both engines: the port's samples must match v1.3's to within 2
- *      (v1.3 multiplies by velocity 127 = 32766/32768 in render and rounds twice; the port leaves velocity to the OS);
- *   2. the screen: every node it should move is found, and turning the knobs moves them as v1.3's screen does.
+ *   1. the same notes, knobs and pitch through both engines. Since 1.5.2 the port computes at half rate with its LFOs
+ *      once a block, so its samples are close to v1.3's, not equal: per knob set, every note's level must be within
+ *      1 dB of v1.3's, and at the points it computes the difference (what the port gets wrong) at least 50 dB below
+ *      the sound with the LFOs off (HAUNTING 0), 35 dB with them on (the vibrato's timing drifts a little, which moves the phase);
+ *      no note may be silent and the output must never reach full scale;
+ *   2. the sine: the quarter table in fast memory folds out to v1.3's whole table;
+ *   3. the screen: every node it should move is found, and turning the knobs moves them as v1.3's screen does.
  * Build and run: opus/tests/run.sh. Writes v13.raw and opus.raw (int16 mono) for listening. */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "opus_plugin.h"
+#include "bm.h"
 
 /* ---- v1.3, built with its own host harness names (-DOP1_HOST) in v13.o ---- */
 typedef struct { void (*note_on)(void *, const short *); void (*render)(void *, short *, const short *);
@@ -20,6 +24,9 @@ static const struct opus_engine *eng;
 int opus_engine_add(struct opl_self *self, const struct opus_engine *e) { (void)self; eng = e; return 0x1234; }
 int opus_art_text(struct opl_self *self, const char *name, const char *svg, unsigned len)
 { (void)self; (void)name; return (len > 40000 && strncmp(svg, "<?xml", 5) == 0 && svg[len - 2] == '>') ? 0 : -1; }
+static short fast_mem[4096];
+static unsigned fast_asked;
+void *opus_fast(struct opl_self *self, unsigned bytes) { (void)self; fast_asked = bytes; return bytes <= sizeof fast_mem ? fast_mem : 0; }
 void opus_log(struct opl_self *self, const char *t) { (void)self; fprintf(stderr, "log: %s\n", t); }
 static short knobs_now[8];
 int opus_engine_knobs(short par[8]) { memcpy(par, knobs_now, sizeof knobs_now); return 1; }
@@ -54,24 +61,31 @@ int main(void)
 {
     static struct opl_self self = { sizeof self, "noladrift.bloodmoon", "/yaffs2/mod/noladrift.bloodmoon", 0 };
     for (int i = 0; i < 8192; i++) host_sine[i] = (short)lrint(32767.0 * sin(2 * M_PI * i / 8192.0));
-    extern const short BM_SINE[8192];
-    if (memcmp(host_sine, BM_SINE, sizeof host_sine)) { fprintf(stderr, "FAIL: sine tables differ\n"); return 1; }
     if (opl_init(&self) || !eng || !eng->svg || !eng->screen_draw || strcmp(eng->type, "bloodmoon")) {
         fprintf(stderr, "FAIL: opl_init / the engine struct\n"); return 1;
     }
     printf("engine \"%s\", type \"%s\", %u voice bytes, screen %s\n", eng->name, eng->type, eng->voice, eng->svg);
+    /* the quarter table, folded, in fast memory, gives v1.3's whole table */
+    extern const short *bm_qsine;
+    if (bm_qsine != (const short *)fast_mem) { fprintf(stderr, "FAIL: the sine table is not in fast memory\n"); return 1; }
+    for (unsigned k = 0; k < 8192; k++)
+        if (bm_sin(k) != host_sine[k]) { fprintf(stderr, "FAIL: sine %u: %d, v1.3 %d\n", k, bm_sin(k), host_sine[k]); return 1; }
+    printf("sine: the 4 KB quarter table in fast memory matches v1.3's 8192 steps\n");
 
     /* 1. sound: knob sets, a phrase each, notes held 110 blocks then released 28, the seed shared by both */
     static const short sets[][4] = { { 14000, 20000, 7000, 9000 }, { 32767, 32767, 32767, 32767 }, { 0, 0, 0, 0 },
-                                     { 32767, 0, 16000, 3000 }, { 5000, 32767, 32767, 32767 } };
+                                     { 32767, 0, 16000, 3000 }, { 5000, 32767, 32767, 32767 },
+                                     { 32767, 32767, 0, 0 }, { 16000, 8000, 0, 32767 } };
     static const int notes[] = { 36, 48, 52, 55, 60, 72, 84, 96 };
     unsigned char *voice = calloc(1, eng->voice);
     FILE *fa = fopen("v13.raw", "wb"), *fb = fopen("opus.raw", "wb");
-    int maxdiff = 0, peak = 0; long n = 0;
+    int peak = 0, fail = 0; long n = 0;
     for (unsigned s = 0; s < sizeof sets / sizeof sets[0]; s++) {
         short k[8] = { sets[s][0], sets[s][1], sets[s][2], sets[s][3], 0, 0, 0, 0 };
+        double sig = 0, err = 0, worst_lvl = 0;
         for (unsigned j = 0; j < sizeof notes / sizeof notes[0]; j++) {
             unsigned pitch[128]; short a[128], b[128];
+            double ea = 0, eb = 0;
             for (int i = 0; i < 128; i++) host_pitch_inc[i] = inc_of(notes[j]), pitch[i] = (unsigned)host_pitch_inc[i];
             host_voice_vel[0] = 127 << 8;
             eng->init(voice, 0);
@@ -82,17 +96,28 @@ int main(void)
                 ENGINE_bloodmoon.render(host_voice_mem, a, k);
                 eng->render(voice, b, k, pitch);
                 for (int i = 0; i < 128; i++) {
-                    int d = abs(a[i] - b[i]); maxdiff = d > maxdiff ? d : maxdiff;
+                    double x = a[i], y = b[i];
+                    if (i & 1) { sig += x * x; err += (x - y) * (x - y); }   /* the computed points: see below */
+                    ea += x * x; eb += y * y;
                     peak = abs(b[i]) > peak ? abs(b[i]) : peak; n += b[i] != 0;
                 }
                 fwrite(a, 2, 128, fa); fwrite(b, 2, 128, fb);
             }
+            if (eb == 0) { fprintf(stderr, "FAIL: set %u note %d is silent\n", s, notes[j]); fail = 1; }
+            double lvl = fabs(10 * log10((eb + 1) / (ea + 1)));
+            worst_lvl = lvl > worst_lvl ? lvl : worst_lvl;
         }
+        /* the difference at the points the port computes (every second sample); the samples between are the mean of
+         * their neighbours, whose error is mostly above 22 kHz (removed when the OS mixes at 44.1 kHz) and shows in
+         * the level instead: at most 0.8 dB down for the highest notes, where the 4th harmonic nears 17 kHz */
+        double snr = 10 * log10(sig / (err + 1)), need = sets[s][2] ? 35 : 50;
+        printf("sound: knobs %5d %5d %5d %5d: level within %.2f dB of v1.3, difference %.1f dB below it\n",
+               sets[s][0], sets[s][1], sets[s][2], sets[s][3], worst_lvl, snr);
+        if (worst_lvl > 1.0 || snr < need) { fprintf(stderr, "FAIL: set %u is too far from v1.3\n", s); fail = 1; }
     }
-    fclose(fa); fclose(fb);
-    printf("sound: max difference from v1.3 %d (of 32767), peak %d (%.1f dBFS), %ld non-zero samples\n",
-           maxdiff, peak, 20 * log10(peak / 32768.0), n);
-    if (maxdiff > 2 || n == 0) { fprintf(stderr, "FAIL: the sound differs from v1.3\n"); return 1; }
+    fclose(fa); fclose(fb); free(voice);
+    printf("sound: peak %d (%.1f dBFS), %ld non-zero samples\n", peak, 20 * log10(peak / 32768.0), n);
+    if (fail || n == 0 || peak >= 32767) { fprintf(stderr, "FAIL: the sound\n"); return 1; }
 
     /* 2. screen */
     void *doc = (void *)1, *scr = &doc;
