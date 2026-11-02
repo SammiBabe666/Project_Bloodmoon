@@ -119,4 +119,5 @@ __asm__(".text\n"
         "    P0.L = _bench_stack_top; P0.H = _bench_stack_top;\n"
         "    P0 = [P0];\n"
         "    SP = P0; FP = P0;\n"
+        "    R0 = SYSCFG; BITSET (R0, 1); SYSCFG = R0; CSYNC;\n"   /* CCEN: the CYCLES counter runs */
         "    call _bench_c;\n");
