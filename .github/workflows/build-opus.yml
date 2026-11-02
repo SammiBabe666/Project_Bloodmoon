@@ -5,8 +5,6 @@ name: Build Opus plugin
 # attaches it to the run as an artifact. It never commits: a release is copied into download/ by hand after a test.
 on:
   workflow_dispatch:
-  push:
-    branches: [multi-platform]   # TEMPORARY: one check run before merge, removed in the next commit
 
 env:
   KIT_REF: d9b0d2e6ddf660d7db758f2be9647585fe100ad8

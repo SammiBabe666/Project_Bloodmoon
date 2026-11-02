@@ -17,6 +17,7 @@ The Opus builds 1.5.0 and 1.5.1 were switched off for their CPU on a real OP-1 a
 source is in the history: `9dde706` and `248e363`). `download/bloodmoon-1.5.2.zip` bundles the 1.5.2 `.opmod`, the 1.4
 `.knl`, the eight presets, `INSTALL.md`, `LICENSE` and `NOTICE`.
 
-Only the `.opmod` was checked against its source in a build (the GitHub Actions run that made it). The `.knl` and the
+Only the `.opmod` has been checked against its source: rebuilt from `platforms/` after the reorganisation (the
+Build Opus plugin workflow, 2 Nov 2026), it is byte-identical to the released file. The `.knl` and the
 `.op1p` files were not rebuilt here: their toolchains (the Hundekraft SDK, op1r's Docker image) are not in this
 repository.
