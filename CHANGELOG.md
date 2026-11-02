@@ -2,7 +2,8 @@
 
 | Version | Date | In one line | On a real OP-1 |
 |---|---|---|---|
-| v1.5.1 | 1 Nov 2026 | Opus build fixed: no longer switched off for its CPU | Not yet tested |
+| v1.5.2 | 2 Nov 2026 | Opus build: the voice costs a quarter of 1.5.1's CPU, measured | Not yet tested |
+| v1.5.1 | 1 Nov 2026 | Opus build: sine table in fast memory | Failed: switched off after three notes, organ not heard |
 | v1.5 | 31 Oct 2026 | A ready-made download zip: the Opus 2 `.opmod` and the Hundekraft `.knl`, nothing to build | Not yet tested |
 | v1.4-knl (experimental) | 22 Oct 2026 | Same as v1.3, packed as a Hundekraft 3.0 `.knl` plugin | Not yet tested |
 | **v1.3** (stable) | 21 Oct 2026 | Output level set to +3 dB over v1.0 to stop speaker crackle | Plays well |
@@ -10,7 +11,20 @@
 | v1.1 | 21 Oct 2026 | +6 dB louder, old screen | Not reported separately |
 | v1.0 | 20 Oct 2026 | First release | Works |
 
-## v1.5.1: Opus build fixed
+## v1.5.2: Opus voice rebuilt for the OP-1's processor
+
+On a real OP-1, 1.5.1 was still switched off for its CPU after three notes, and only the bell was heard. A Blackfin simulator (GDB's, now run on every change, `opus/tests/bench_bfin.sh`) showed why: 1.5.1's six voices cost 247,335 cycles a block, about 41,000 a voice, so three voices went past the core's limit (25 % over the 120,000-cycle figure). 1.5.2's six voices cost 68,207 in the same test:
+
+- the sound is computed at 44.1 kHz, the OS's own rate, and each sample between is the mean of its neighbours;
+- the vibrato and instability LFOs are read once a block (689 times a second) instead of every sample;
+- the 2nd, 3rd and 4th harmonics come from the fundamental's sine and cosine by the multiple-angle formulas: two table reads instead of four, the same waveform;
+- 16-bit multiplies, no branches and no clamp per sample, no library division, and the organ and bell computed in separate passes so the processor never runs out of registers.
+
+The sound stays close to v1.3: every note within 1 dB, and at the computed points the difference is 40 to 69 dB below the sound (`opus/tests/run.sh`, now also run with sanitizers). The highest notes lose up to 0.8 dB of their top harmonics. The CPU figure stays a provisional 120,000 until it is measured on a device.
+
+The missing organ is not yet explained. The organ and bell read the same table, so the likeliest cause is the slot's T2 envelope: a new engine keeps the previous sound's, and a short one lets only the attack through, where the bell is loudest. Please test with a long sustain.
+
+## v1.5.1: Opus build, first CPU fix (failed on the device)
 
 On a real OP-1, 1.5.0's Opus build drew its screen but made no sound: Opus showed "audio switched off: over its CPU". It had no CPU figure, so Opus held it to a tenth of the audio block (58,052 cycles), and its 16 KB sine table, read from ordinary memory in every sample of six voices, cost far more than that (Opus counts about 107 cycles for each 32-byte line of ordinary memory an audio block touches). 1.5.1:
 
