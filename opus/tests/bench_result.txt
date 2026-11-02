@@ -1,0 +1,2 @@
+before (801f8a7): six voices, worst block 247335 cycles, mean 241753, one voice about 41222 (sound check: last sample 2631)
+now: six voices, worst block 68207 cycles, mean 68129, one voice about 11367 (sound check: last sample 2627)
