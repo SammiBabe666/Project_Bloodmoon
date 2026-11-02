@@ -7,7 +7,7 @@ All three builds need an **original OP-1** (not the OP-1 Field) on firmware **R2
 | Firmware mod | op1r with the plugin loader | Hundekraft 3.0+ (3.0.3 SDK) | Opus 2, core 2.6+ |
 | File, version | `bloodmoon.op1p` 1.3 | `bloodmoon.knl` 1.4 | `bloodmoon.opmod` 1.5.2 |
 | Identity | engine `bloodmoon` | plugin ID `bloodmoon`, no claims | id `noladrift.bloodmoon`, claims sound type `bloodmoon` |
-| Presets load | yes (`type: bloodmoon`) | yes (same ID) | yes, through the core 2.6 type bridge (not yet confirmed on a device) |
+| Presets load | yes (`type: bloodmoon`) | yes (same ID) | probably not: the kit documents a type bridge, but Opus's author says such sounds do not load; Opus presets need the format Opus saves |
 | Sound vs v1.3 | the reference | identical code | within 1 dB; up to 0.8 dB less top harmonic on the highest notes |
 | CPU | about 8.5 % of the audio block for six voices (simulator, v1.3) | as op1r | 68,207 cycles for six voices in the simulator, 12 % of the 580,525-cycle block; figure 120,000 (provisional) |
 | Memory | 32 voice bytes, firmware table | the same | 32 voice bytes x 6, 4.2 KB of shared fast memory, a 42 KB art file written to its folder |

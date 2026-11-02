@@ -9,7 +9,7 @@ platforms/op1/src/plugins/bloodmoon/      the source of truth
   moon.c       screen                ├──► Hundekraft .knl       (platforms/hundekraft: plugin.json + these files)
   bloodmoon.svg art ─────────────────┼──► Opus bm_art.h         (platforms/opus/make_headers.py)
                                      └──◄ Opus port's host test (platforms/opus/tests/compare.c)
-shared/preset-specifications/bloodmoon-presets.json ──► presets/bloodmoon/*.aif (one set for all three)
+shared/preset-specifications/bloodmoon-presets.json ──► presets/bloodmoon/*.aif (op1r and Hundekraft; Opus not yet)
 ```
 
 ## The voice

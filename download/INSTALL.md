@@ -25,8 +25,7 @@ You need Opus 2 on the OP-1. You can make the update from your own firmware at h
 4. Open Opus's menu, then press **T2** for the mods list. The **bloodmoon** row should say **loaded**. If it gives a
    reason instead, please send it to us.
 5. On a synth slot, press **shift + T1** and choose **bloodmoon**.
-6. A new engine keeps the slot's previous envelope. On **T2**, turn the sustain up so held notes ring, or load one of
-   the presets below.
+6. A new engine keeps the slot's previous envelope. On **T2**, turn the sustain up so held notes ring.
 
 To help us set its CPU figure: with developer mode on, play six-note chords with all four knobs up for a minute, then
 open the mods list, select **bloodmoon** and press the **orange** encoder. Send us the "audio: worst" number.
@@ -43,8 +42,12 @@ file in disk mode.
 
 ## Presets
 
-In disk mode, copy the `presets/bloodmoon` folder into the OP-1's `synth` folder. Back up `synth` first. The presets
-load with either file.
+In disk mode, copy the `presets/bloodmoon` folder into the OP-1's `synth` folder. Back up `synth` first.
+
+These presets are for **Hundekraft** (and the older op1r plugin). On **Opus** they probably do not load: Opus's
+author has said sounds tagged with an engine type this way do not load on Opus. Opus presets need the format Opus
+itself saves, which is not documented yet. If you save a bloodmoon sound on Opus and send us the file, we can make
+Opus presets from it.
 
 ## The knobs
 

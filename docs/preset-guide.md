@@ -1,7 +1,7 @@
 # Preset guide
 
-Eight factory sounds, one file each, in [`presets/bloodmoon/`](../presets/bloodmoon/). The same files load with every
-platform's plugin. Their settings live in one place,
+Eight factory sounds, one file each, in [`presets/bloodmoon/`](../presets/bloodmoon/). They are op1r-format sounds
+(`type: "bloodmoon"`) for the op1r and Hundekraft builds. Opus presets are not made yet (see below). Their settings live in one place,
 [`shared/preset-specifications/bloodmoon-presets.json`](../shared/preset-specifications/bloodmoon-presets.json), and
 the files are generated from it.
 
@@ -23,6 +23,14 @@ MOONRISE 5 to 92. Rendered through the host harness before the envelope, their l
 
 The 2026-11 audit kept all eight as they were. They already matched the intended characters, and no test found a
 problem. "Hollow saint" keeps its name, because renaming would change the file that users' setups point at.
+
+## Opus
+
+Opus saves an engine's sound as the OS's `iter` with the engine's number in knob 4 and an `"opus"` member naming the
+plugin. The Opus kit (30 Oct 2026) says a sound carrying another firmware's `"type"` loads as the engine that claims
+it, but Opus's author said on 1 Nov 2026 that such sounds do not load (as recorded in Project Erdtree's notes). Neither
+has been tried with BLOODMOON. Opus presets can be generated from the same specification once the format is read from
+one bloodmoon sound saved on an OP-1 with Opus.
 
 ## Adding a ninth preset, or changing one
 
