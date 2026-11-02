@@ -1,0 +1,73 @@
+name: Build Opus plugin
+
+# Manual only (Actions tab, "Run workflow"): builds bloodmoon.opmod from the current source, measures it on GDB's
+# Blackfin simulator beside the 1.5.1 engine, says whether it equals the released download/opus/bloodmoon.opmod, and
+# attaches it to the run as an artifact. It never commits: a release is copied into download/ by hand after a test.
+on:
+  workflow_dispatch:
+
+env:
+  KIT_REF: d9b0d2e6ddf660d7db758f2be9647585fe100ad8
+  GDB: '14.2'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: LizardMan245/opus
+          ref: ${{ env.KIT_REF }}
+          path: opus-kit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Toolchain cache
+        id: tc
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/bfin-build/linux-install
+          key: bfin-toolchain-${{ env.KIT_REF }}
+      - name: Build the Blackfin compiler
+        if: steps.tc.outputs.cache-hit != 'true'
+        run: |
+          sudo bash opus-kit/plugin-kit/tools/toolchain/build-bfin-toolchain.sh deps
+          WORK=/home/runner/bfin-build bash opus-kit/plugin-kit/tools/toolchain/build-bfin-toolchain.sh fetch verify extract linux
+      - name: Simulator cache
+        id: sim
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/bfin-sim
+          key: bfin-sim-gdb-${{ env.GDB }}
+      - name: Build the Blackfin simulator (GDB's sim)
+        if: steps.sim.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq texinfo bison flex libgmp-dev libmpfr-dev >/dev/null
+          cd $RUNNER_TEMP
+          wget -q https://ftp.gnu.org/gnu/gdb/gdb-$GDB.tar.xz https://ftp.gnu.org/gnu/gdb/gdb-$GDB.tar.xz.sig https://ftp.gnu.org/gnu/gnu-keyring.gpg
+          gpgv --keyring ./gnu-keyring.gpg gdb-$GDB.tar.xz.sig gdb-$GDB.tar.xz
+          tar xf gdb-$GDB.tar.xz && mkdir sim-build && cd sim-build
+          ../gdb-$GDB/configure --target=bfin-elf --prefix=/home/runner/bfin-sim --disable-gdb --disable-gdbserver \
+              --disable-binutils --disable-ld --disable-gas --disable-gprof --disable-nls --disable-werror >/dev/null
+          make -j$(nproc) all-sim >/dev/null && make install-sim >/dev/null
+      - name: Build bloodmoon.opmod
+        run: |
+          OPUS_KIT=opus-kit OP1_BFIN_TOOLCHAIN=/home/runner/bfin-build/linux-install tools/build-platform/build-opus.sh build/opus/bloodmoon.opmod
+          if cmp -s build/opus/bloodmoon.opmod download/opus/bloodmoon.opmod; then
+            echo "Identical to the released download/opus/bloodmoon.opmod" | tee -a $GITHUB_STEP_SUMMARY
+          else
+            echo "Differs from the released download/opus/bloodmoon.opmod (a development build)" | tee -a $GITHUB_STEP_SUMMARY
+          fi
+      - name: Cycle benchmark (simulator, beside 1.5.1)
+        run: |
+          export PATH=/home/runner/bfin-sim/bin:$PATH
+          OPUS_SDK=opus-kit/plugin-kit/sdk OP1_BFIN_TOOLCHAIN=/home/runner/bfin-build/linux-install OUT=$RUNNER_TEMP/bench \
+              platforms/opus/tests/bench_bfin.sh 801f8a7 | tee -a $GITHUB_STEP_SUMMARY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bloodmoon-opmod-dev-${{ github.sha }}
+          path: build/opus/bloodmoon.opmod

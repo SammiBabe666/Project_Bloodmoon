@@ -6,7 +6,7 @@
  * What this measures: the core's instructions and their stalls as the simulator models them. Not modelled: the
  * OP-1's memory timing (an ordinary-memory cache line costs about 107 cycles a block on the device) and the core's
  * own work around each render, so the device's "audio: worst N" is higher. Use it to compare versions and to find
- * the order of magnitude, not as the cpu.txt figure. Built and run by opus/tests/bench_bfin.sh.
+ * the order of magnitude, not as the cpu.txt figure. Built and run by platforms/opus/tests/bench_bfin.sh.
  * Copyright (C) 2026 Nola Drift. GPL-3.0-or-later with the OP-1 firmware permission (see LICENSE and NOTICE). */
 #include "opus_plugin.h"
 

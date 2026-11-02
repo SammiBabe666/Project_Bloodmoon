@@ -6,7 +6,10 @@ as JSON in an APPL chunk ("op-1" + JSON), laid out like the OP-1's own files. "t
 name (op1r plugload.c, set_selector); on an OP-1 without the plugin the sound loads as iter (dispatcher.c).
 The audio part is a short preview rendered with the PC harness; the OP-1 does not need it for a synth sound.
 
-    python3 tests/make_presets.py [out_dir]      (run from synth_sdk; needs cc for the harness)
+    python3 platforms/op1/src/tests/make_presets.py [out_dir]   (needs cc for the harness; default out: presets/bloodmoon)
+
+The sounds are in shared/preset-specifications/bloodmoon-presets.json: change them there, run this, then
+tools/preset-validation/validate_presets.py.
 """
 import json, os, struct, subprocess, sys
 
@@ -17,17 +20,18 @@ POLY, NO_GLIDE = 2048, 64                   # adsr[4] play mode (poly), adsr[5] 
 DELAY_OFF = [7168, 32767, 5520, 2616, 0, 0, 0, 0]
 TREMOLO = [16000, 0, 0, 16000, 0, 0, 0, 0]  # the factory tremolo, switched off
 
-# name, knobs (blue BLOOD, green ECLIPSE, white HAUNTING, red MOONRISE), attack, decay, sustain, release, octave, delay
-SOUNDS = [
-    ('cathedral',    (14000, 20000, 7000, 9000),   1088, 6592, 26000, 12000,  0, [8192, 20000, 9000, 14000]),
-    ('funeral bell', (9000, 32767, 2500, 4000),      64, 9000,  6000, 14000,  0, [10240, 24000, 12000, 16000]),
-    ('crypt drone',  (30000, 0, 9000, 2500),       6000, 8000, 32767, 14976, -1, None),
-    ('witch choir',  (20000, 9000, 22000, 7500),   3000, 6592, 28000, 12736,  0, [6144, 18000, 8000, 12000]),
-    ('hollow saint', (0, 12000, 3500, 6000),        576, 6592, 24000,  9000,  0, None),
-    ('moon tremor',  (18000, 16000, 32767, 30000),   64, 6592, 30000,  6000,  0, None),
-    ('sunken pipes', (26000, 4000, 13000, 1500),   2048, 6592, 32767, 14000, -1, [9216, 22000, 6000, 15000]),
-    ('blood rite',   (32767, 26000, 16000, 12000),   64, 12352, 20000, 12000, 0, [7168, 16000, 10000, 13000]),
-]
+SPEC = os.path.join(SDK, '..', '..', '..', 'shared', 'preset-specifications', 'bloodmoon-presets.json')
+
+
+def load_sounds(spec=SPEC):
+    """-> [(name, knobs, attack, decay, sustain, release, octave, delay)] from the shared specification"""
+    out = []
+    for snd in json.load(open(spec))['sounds']:
+        k, e = snd['knobs'], snd['envelope']
+        out.append((snd['name'], (k['blood'], k['eclipse'], k['haunting'], k['moonrise']),
+                    e['attack'], e['decay'], e['sustain'], e['release'], snd['octave'], snd['delay']))
+    return out
+
 
 def ext80(x):                               # IEEE 754 80-bit extended, for the COMM sample rate
     e = 16383 + 63; m = int(x)
@@ -75,9 +79,9 @@ def aif(sound):
     return b'FORM' + struct.pack('>I', len(body)) + body, patch
 
 def main():
-    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(SDK, 'build', 'presets', 'bloodmoon')
+    out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(SDK, '..', '..', '..', 'presets', 'bloodmoon')
     os.makedirs(out, exist_ok=True)
-    for snd in SOUNDS:
+    for snd in load_sounds():
         data, patch = aif(snd)
         fn = os.path.join(out, snd[0].replace(' ', '_') + '.aif')
         open(fn, 'wb').write(data)

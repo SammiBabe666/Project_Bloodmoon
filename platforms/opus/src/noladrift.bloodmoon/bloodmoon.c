@@ -9,14 +9,15 @@
  * (a minor third, deliberately dissonant) and 2.40625x the pitch. The OS's envelope (T2), velocity and mix go around
  * each voice, as for every Opus engine.
  *
- * The sound is v1.3's (src/plugins/bloodmoon/bloodmoon.c): the same partials, gains, bell decay, vibrato and knob
+ * The sound is v1.3's (platforms/op1/src/plugins/bloodmoon/bloodmoon.c): the same partials, gains, bell decay, vibrato and knob
  * curves. What changed for Opus:
  *   - the voice is the core's (struct opus_engine's voice bytes), not iter's 0x24-byte object, so no vtable word;
  *   - pitch and knobs come in render's arguments, not from firmware addresses; the knobs have the LFO in;
  *   - the sine table is the plugin's own (bm_sine.h, a quarter of v1.3's values), in fast memory (bm.h says why);
  *   - velocity is the OS's alone: v1.3 also multiplied by it in render, so soft notes are a little louder here;
  *   - render computes it at half rate with the LFOs once a block (1.5.2, bm_render says how): close to v1.3's
- *     samples, not equal to them (opus/tests/compare.c measures how close).
+ *     samples, not equal to them (platforms/opus/tests/compare.c measures
+ *     how close).
  * Everything is integer / Q15, 32-bit only per sample, no libc.
  * Copyright (C) 2026 Nola Drift. GPL-3.0-or-later with the OP-1 firmware permission (see LICENSE and NOTICE). */
 #include "bm.h"

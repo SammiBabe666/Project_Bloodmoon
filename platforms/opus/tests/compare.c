@@ -1,4 +1,5 @@
-/* Host test of the Opus 2 port (opus/noladrift.bloodmoon) against v1.3 (src/plugins/bloodmoon), on the computer:
+/* Host test of the Opus 2 port (platforms/opus/src/noladrift.bloodmoon) against v1.3
+ * (platforms/op1/src/plugins/bloodmoon), on the computer:
  *   1. the same notes, knobs and pitch through both engines. Since 1.5.2 the port computes at half rate with its LFOs
  *      once a block, so its samples are close to v1.3's, not equal: per knob set, every note's level must be within
  *      1 dB of v1.3's, and at the points it computes the difference (what the port gets wrong) at least 50 dB below
@@ -6,7 +7,7 @@
  *      no note may be silent and the output must never reach full scale;
  *   2. the sine: the quarter table in fast memory folds out to v1.3's whole table;
  *   3. the screen: every node it should move is found, and turning the knobs moves them as v1.3's screen does.
- * Build and run: opus/tests/run.sh. Writes v13.raw and opus.raw (int16 mono) for listening. */
+ * Build and run: platforms/opus/tests/run.sh. Writes v13.raw and opus.raw (int16 mono) for listening. */
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
