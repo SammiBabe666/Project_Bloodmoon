@@ -2,3 +2,4 @@ src/harness/out/
 src/harness/build/
 src/build/
 opus/tests/out/
+opus/tests/out-bfin/

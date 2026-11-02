@@ -1,0 +1,97 @@
+name: Opus engine - test, cycle benchmark, build
+
+# Temporary, for the 1.5.2 fix (removed again before the pull request merges): every push to this branch runs the
+# computer test and measures the voices on GDB's Blackfin simulator, the release before beside the current one. A push
+# whose commit message holds [package] also builds bloodmoon.opmod and commits it as download/opus/bloodmoon.opmod.
+on:
+  push:
+    branches: [opus-cpu-fix]
+
+permissions:
+  contents: write
+
+env:
+  KIT_REF: d9b0d2e6ddf660d7db758f2be9647585fe100ad8
+  GDB: '14.2'
+  OLD_REV: 801f8a7
+
+jobs:
+  bench:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          repository: LizardMan245/opus
+          ref: ${{ env.KIT_REF }}
+          path: opus-kit
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: The generated headers match
+        run: python opus/make_headers.py && git diff --exit-code -- opus/
+      - name: Computer test against v1.3 (with sanitizers)
+        run: |
+          OPUS_SDK=opus-kit/plugin-kit/sdk OUT=$RUNNER_TEMP/test opus/tests/run.sh
+          SANITIZE="-fsanitize=address,undefined -fno-sanitize-recover=all" OPUS_SDK=opus-kit/plugin-kit/sdk OUT=$RUNNER_TEMP/test-san opus/tests/run.sh
+      - name: Toolchain cache
+        id: tc
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/bfin-build/linux-install
+          key: bfin-toolchain-${{ env.KIT_REF }}
+      - name: Build the Blackfin compiler
+        if: steps.tc.outputs.cache-hit != 'true'
+        run: |
+          sudo bash opus-kit/plugin-kit/tools/toolchain/build-bfin-toolchain.sh deps
+          WORK=/home/runner/bfin-build bash opus-kit/plugin-kit/tools/toolchain/build-bfin-toolchain.sh fetch verify extract linux
+      - name: Simulator cache
+        id: sim
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/bfin-sim
+          key: bfin-sim-gdb-${{ env.GDB }}
+      - name: Build the Blackfin simulator (GDB's sim)
+        if: steps.sim.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq texinfo bison flex libgmp-dev libmpfr-dev >/dev/null
+          cd $RUNNER_TEMP
+          wget -q https://ftp.gnu.org/gnu/gdb/gdb-$GDB.tar.xz https://ftp.gnu.org/gnu/gdb/gdb-$GDB.tar.xz.sig https://ftp.gnu.org/gnu/gnu-keyring.gpg
+          gpgv --keyring ./gnu-keyring.gpg gdb-$GDB.tar.xz.sig gdb-$GDB.tar.xz
+          tar xf gdb-$GDB.tar.xz && mkdir sim-build && cd sim-build
+          ../gdb-$GDB/configure --target=bfin-elf --prefix=/home/runner/bfin-sim --disable-gdb --disable-gdbserver \
+              --disable-binutils --disable-ld --disable-gas --disable-gprof --disable-nls --disable-werror >/dev/null
+          make -j$(nproc) all-sim >/dev/null
+          make install-sim >/dev/null
+          ls /home/runner/bfin-sim/bin
+      - name: Cycle benchmark (simulator)
+        id: bench
+        continue-on-error: true
+        run: |
+          export PATH=/home/runner/bfin-sim/bin:$PATH
+          OPUS_SDK=opus-kit/plugin-kit/sdk OP1_BFIN_TOOLCHAIN=/home/runner/bfin-build/linux-install OUT=$RUNNER_TEMP/bench \
+              opus/tests/bench_bfin.sh $OLD_REV | tee $RUNNER_TEMP/bench.txt
+          cat $RUNNER_TEMP/bench.txt >> $GITHUB_STEP_SUMMARY
+      - name: Disassembly of the render (for reading the loop)
+        continue-on-error: true
+        run: |
+          /home/runner/bfin-build/linux-install/bin/bfin-elf-objdump -d --no-show-raw-insn $RUNNER_TEMP/bench/now.o \
+              | awk '/<_bm_render>:/,/^$/' | tee $RUNNER_TEMP/render.s | wc -l
+          cat $RUNNER_TEMP/render.s
+      - name: Build bloodmoon.opmod and commit it
+        if: contains(github.event.head_commit.message, '[package]')
+        run: |
+          export OP1_BFIN_TOOLCHAIN=/home/runner/bfin-build/linux-install
+          mkdir -p download/opus
+          python opus-kit/plugin-kit/plugin_tool.py build opus/noladrift.bloodmoon --out download/opus/bloodmoon.opmod
+          python opus-kit/plugin-kit/plugin_tool.py show download/opus/bloodmoon.opmod
+          rm -rf download/opus/bloodmoon.build
+          [ -s $RUNNER_TEMP/bench.txt ] && cp $RUNNER_TEMP/bench.txt opus/tests/bench_result.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add download/opus/bloodmoon.opmod opus/tests/bench_result.txt 2>/dev/null || git add download/opus/bloodmoon.opmod
+          git commit -m "Add the built bloodmoon.opmod $(sed -n 's/^version //p' opus/noladrift.bloodmoon/manifest.txt) (one-time build)"
+          git push
