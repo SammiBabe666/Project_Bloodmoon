@@ -6,6 +6,7 @@ copied here or into `download/` by hand.
 
 | Version | File | Platform | Built from | SHA-256 | On a real OP-1 |
 |---|---|---|---|---|---|
+| 1.5.3 (test) | [`v1.5.3-test/bloodmoon.opmod`](v1.5.3-test/bloodmoon.opmod) | Opus 2, core 2.6+ | this branch (Opus kit `d9b0d2e`, shared toolchain GCC 13.3.0 / binutils 2.38) | `52b92af3…dc303` | Not yet tested (fixes retrigger pops) |
 | 1.5.2 | [`download/opus/bloodmoon.opmod`](../download/opus/bloodmoon.opmod) | Opus 2, core 2.6+ | `67ff2f4` (Opus kit `d9b0d2e`, GitHub Actions) | `854d06e7…dd74e` | Not yet tested |
 | 1.4 | [`v1.4-knl/bloodmoon.knl`](v1.4-knl/bloodmoon.knl), also `download/hundekraft/` | Hundekraft 3.0+ | `knl/source/` at `1152b7f` (Hundekraft SDK 3.0.3, bfin-elf-gcc 13.3) | `e8b8a691…41201` | Not yet tested |
 | 1.3 | [`v1.3/bloodmoon.op1p`](v1.3/bloodmoon.op1p) | op1r loader | `src/` at `3cac835` (op1r `make_plugin.py`) | `8440dc1e…6c606` | Plays well |

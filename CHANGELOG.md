@@ -2,6 +2,7 @@
 
 | Version | Date | In one line | On a real OP-1 |
 |---|---|---|---|
+| v1.5.3 (test build) | 4 Nov 2026 | Opus build: no pop when a note retriggers a voice that still sounds (mono, poly, retrigger) | Not yet tested |
 | Opus presets | 2 Nov 2026 | The 8 sounds as Opus presets (`sound.json`; `.aif` once Opus's format is read from a saved sound) | Not yet tested |
 | Repository 2026-11 | 2 Nov 2026 | Reorganised into `platforms/`, preset validator, tests for all three platforms in CI. No plugin file changed | (no new files) |
 | v1.5.2 | 2 Nov 2026 | Opus build: the voice costs a quarter of 1.5.1's CPU, measured | Not yet tested |
@@ -12,6 +13,40 @@
 | v1.2 | 21 Oct 2026 | Knob names and values on the screen, 8 presets, +6 dB | Screen shows; crackled on the speaker |
 | v1.1 | 21 Oct 2026 | +6 dB louder, old screen | Not reported separately |
 | v1.0 | 20 Oct 2026 | First release | Works |
+
+## v1.5.3 (test build): no pops on retrigger
+
+Reported on a real OP-1 with 1.5.2: an occasional pop in mono with no effects, more often in poly or with effects.
+
+**Cause.** The OS calls the engine's `note_on` on a voice that may still be sounding: every new note on a mono slot, a
+poly slot's voice taken again while it is still in its release, and any retrigger. The OS's envelope keeps going around
+the voice, but 1.5.2's `note_on` restarted every partial's phase at zero, set the last sample to 0, snapped BLOOD to the
+stored knob and started a new bell strike at full level at whatever phase its partials were. Each of these is a step in
+the waveform. On the computer the worst step at a retrigger was 14.65 times the sound's own steepest step. Poly slots
+reuse voices in their release far more often, which is why poly made it worse, and effects make the clicks stand out
+more.
+
+**Fix** (`platforms/opus/src/noladrift.bloodmoon/bloodmoon.c`):
+- `note_on` no longer resets the phases, the last sample or the smoothed BLOOD, so the waveform carries on through a
+  new note. A voice the OS has just built (`init`) still starts at zero, as before.
+- When the bell's gains jump (a new strike, or a lower one, on a voice that is still sounding), they glide from the
+  last block's to the new ones over the block's 64 points (1.45 ms) instead of stepping. The bell's ordinary
+  block-by-block decay (at most 54 a block) keeps 1.5.2's loop and its cost.
+- When the bell is silent, its phases follow the fundamental's own move instead of reading the 128 pitch steps again
+  (the same sum, a little less CPU).
+
+**Unchanged:** the knobs, the screen, the defaults and the sound of a note. The comparison with v1.3 gives the same
+figures as 1.5.2 (`platforms/opus/tests/run.sh`, with and without sanitizers), and a new test plays retriggers across
+four knob sets, five note pairs and eight timings, with BLOOD moved by an LFO: the worst step is now 1.02 times the
+sound's own (the test fails above 1.25; 1.5.2 fails it).
+
+**CPU** (GDB's Blackfin simulator, six voices, every knob up): 70,439 cycles a block, against 68,207 for 1.5.2
+built with the same compiler (+3.3 %), well under the 120,000 figure in `cpu.txt`.
+
+**Build:** `releases/v1.5.3-test/bloodmoon.opmod`, 53,264 bytes, SHA-256 `52b92af3…dc303`, built on the shared
+toolchain (bfin-elf GCC 13.3.0, binutils 2.38) with the Opus kit at `d9b0d2e`; the same toolchain rebuilds 1.5.2's
+engine to its published 68,207 cycles. Not tried on an OP-1 yet. If pops remain with effects on, the next suspects are
+the audio CPU (please send the "audio: worst" number) and the level of a six-note chord into the effect.
 
 ## Opus presets (2 Nov 2026)
 

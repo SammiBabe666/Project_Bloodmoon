@@ -120,6 +120,55 @@ int main(void)
     printf("sound: peak %d (%.1f dBFS), %ld non-zero samples\n", peak, 20 * log10(peak / 32768.0), n);
     if (fail || n == 0 || peak >= 32767) { fprintf(stderr, "FAIL: the sound\n"); return 1; }
 
+    /* 1b. retriggers (a mono slot's next note, a poly slot's voice taken again while it still sounds): the OS keeps its
+     * envelope going around the voice, so the voice's own sound must not jump. A click is a sample-to-sample step
+     * larger than the sound's own steepest one: the steepest step of the old note and of the new one played alone */
+    {
+        static const short rk[][4] = { { 14000, 20000, 7000, 9000 }, { 32767, 32767, 32767, 32767 }, { 0, 32767, 0, 0 },
+                                       { 32767, 0, 16000, 3000 } };
+        static const int pairs[][2] = { { 48, 55 }, { 60, 60 }, { 36, 84 }, { 72, 52 }, { 96, 41 } };
+        unsigned char *vo = calloc(1, eng->voice);
+        double worst = 0;
+        for (unsigned s = 0; s < sizeof rk / sizeof rk[0]; s++)
+            for (unsigned p = 0; p < sizeof pairs / sizeof pairs[0]; p++)
+                for (int at = 3; at < 60; at += 7) {             /* the retrigger after this many blocks */
+                    short k[8] = { rk[s][0], rk[s][1], rk[s][2], rk[s][3], 0, 0, 0, 0 }, par[8], b[128];
+                    memcpy(par, k, sizeof par);
+                    par[0] = (short)(k[0] > 16000 ? k[0] - 9000 : k[0] + 9000);   /* an LFO on BLOOD: par is not knobs */
+                    unsigned pa[128], pb[128];
+                    for (int i = 0; i < 128; i++) pa[i] = (unsigned)inc_of(pairs[p][0]), pb[i] = (unsigned)inc_of(pairs[p][1]);
+                    /* the steepest step of each note alone, from a fresh voice and its bell included */
+                    int natural = 0;
+                    for (int q = 0; q < 2; q++) {
+                        eng->init(vo, 0); eng->note_on(vo, k);
+                        int prev = 0;
+                        for (int blk = 0; blk < 80; blk++) {
+                            eng->render(vo, b, par, q ? pb : pa);
+                            for (int i = 0; i < 128; i++) {
+                                int st = abs(b[i] - prev); prev = b[i];
+                                if ((blk || i) && st > natural) natural = st;
+                            }
+                        }
+                    }
+                    /* the old note, then the retrigger (release and note_on, as the OS does it), then the new note */
+                    eng->init(vo, 0); eng->note_on(vo, k);
+                    int prev = 0, click = 0;
+                    for (int blk = 0; blk < at + 4; blk++) {
+                        if (blk == at) { eng->release(vo, k); eng->note_on(vo, k); }
+                        eng->render(vo, b, par, blk < at ? pa : pb);
+                        for (int i = 0; i < 128; i++) {
+                            int st = abs(b[i] - prev); prev = b[i];
+                            if (blk >= at - 1 && st > click) click = st;
+                        }
+                    }
+                    double r = (double)click / natural;
+                    worst = r > worst ? r : worst;
+                }
+        free(vo);
+        printf("retrigger: the worst step at a retrigger is %.2fx the sound's own steepest step\n", worst);
+        if (worst > 1.25) { fprintf(stderr, "FAIL: a retrigger clicks\n"); return 1; }
+    }
+
     /* 2. screen */
     void *doc = (void *)1, *scr = &doc;
     eng->screen_init(scr);
