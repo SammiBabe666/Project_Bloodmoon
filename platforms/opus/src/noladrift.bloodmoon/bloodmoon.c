@@ -45,6 +45,7 @@ const short *bm_qsine = BM_QSINE;          /* opl_init moves it to fast memory w
 
 #define BELL_RATE_MIN     66         /* strike decay: fraction of level lost per block, Q15 */
 #define BELL_RATE_SPAN    3200       /* added at green = 0 */
+#define BELL_GLIDE        64         /* a bell gain change a block above this glides (the decay's is at most ~55) */
 
 #define BLOCK             128        /* samples a render (88.2 kHz) */
 
@@ -61,7 +62,8 @@ typedef struct {
     short held;            /* 1 from note_on until release */
     short age;             /* blocks since note_on (saturates) */
     short last;            /* the last sample written: the start of the next block's first interpolation */
-    short pad[2];
+    short ba_prev;         /* the bell's two gains at the end of the last block: each block glides from them (-1: none) */
+    short bb_prev;
 } bm_voice_t;              /* 32 bytes */
 
 static unsigned bm_seed = 0x2545F491u;       /* gives each note a different vibrato start phase */
@@ -82,22 +84,28 @@ static void bm_init(void *voice, int index)
     bm_voice_t *v = (bm_voice_t *)voice;
     (void)index;
     v->ph = v->ph_a = v->ph_b = v->vib_ph = 0;
-    v->vib_depth = v->bell_lvl = v->blood_s = 0;
+    v->vib_depth = v->bell_lvl = 0;
+    v->blood_s = -1;                           /* none yet: the first render takes the knob as it is */
     v->held = v->age = v->last = 0;
+    v->ba_prev = -1;                           /* none yet: the first strike starts whole, its partials at zero */
+    v->bb_prev = 0;
 }
 
+/* 1.5.3: a note keeps the voice's waveform going. The OS calls note_on on a voice that may still sound: every note of a
+ * mono slot, a poly slot's voice taken again in its release, a retrigger. Its envelope goes on around the voice, so
+ * 1.5.2's restart of every phase at zero (and its last sample at 0, its BLOOD at the stored knob) was a step in the
+ * sound: a pop, up to 15 times the sound's own steepest step (platforms/opus/tests/compare.c). Now the phases, the
+ * last sample and the smoothed BLOOD run on, and the bell's new strike glides in over the first block (bm_render).
+ * A voice built again (bm_init) still starts at zero, as v1.3's notes did. */
 static void bm_note_on(void *voice, const short *knobs)
 {
     bm_voice_t *v = (bm_voice_t *)voice;
     bm_seed = bm_seed * 1664525u + 1013904223u;
-    v->ph = 0; v->ph_a = 0; v->ph_b = 0;       /* all partials start at a sine zero crossing: no click */
     v->vib_ph = bm_seed;
     v->vib_depth = 0;
     v->bell_lvl = (short)clamp_q15(knobs[1]);
-    v->blood_s = (short)clamp_q15(knobs[0]);
     v->held = 1;
     v->age = 0;
-    v->last = 0;
 }
 
 static void bm_release(void *voice, const short *knobs)
@@ -136,6 +144,7 @@ static void bm_render(void *voice, short *out, const short *par, const unsigned 
 
     /* ---- per-block control values ---- */
     int blood_t = clamp_q15(par[0]);
+    if (v->blood_s < 0) v->blood_s = (short)blood_t;                 /* a voice's first block after bm_init */
     int d = blood_t - v->blood_s;
     v->blood_s = (short)(v->blood_s + ((d + (d > 0 ? 7 : 0)) >> 3));   /* one-pole smoothing, reaches the target */
     int b = v->blood_s;
@@ -187,6 +196,7 @@ static void bm_render(void *voice, short *out, const short *par, const unsigned 
 
     /* ---- pass 1: the organ at 64 points (each two samples' step) ---- */
     unsigned ph = v->ph;
+    const unsigned ph0 = ph;
     for (int n = 0; n < BLOCK / 2; n++) {
         ph += pitch[2 * n] + pitch[2 * n + 1] + dmod;
         const unsigned k = ph >> 19;
@@ -200,8 +210,27 @@ static void bm_render(void *voice, short *out, const short *par, const unsigned 
     }
     v->ph = ph;
 
-    /* ---- pass 2: the bell's two partials, added (skipped once the strike has died away) ---- */
-    if (ba | bb) {
+    /* ---- pass 2: the bell's two partials, added (skipped once the strike has died away). 1.5.3: when its gains jump
+     * (a new strike on a voice that still sounds, at whatever phase its partials are), they glide from the last
+     * block's to this block's over the 64 points: 1.5.2 stepped them, a pop. Its decay moves them at most about 55 a
+     * block, so those blocks keep 1.5.2's loop and cost ---- */
+    const int fresh = v->ba_prev < 0;                                /* the first block after bm_init: v1.3's strike */
+    const int ba0 = fresh ? ba : v->ba_prev, bb0 = fresh ? bb : v->bb_prev;
+    v->ba_prev = ba; v->bb_prev = bb;
+    const int da = ba - ba0, db = bb - bb0;
+    if (da > BELL_GLIDE || da < -BELL_GLIDE || db > BELL_GLIDE || db < -BELL_GLIDE) {
+        unsigned pa = v->ph_a, pb = v->ph_b;
+        int ga = ba0 << 6, gb = bb0 << 6;                            /* Q6: 64 equal steps reach this block's gain */
+        for (int n = 0; n < BLOCK / 2; n++) {
+            const unsigned e = pitch[2 * n] + pitch[2 * n + 1] + dmod;
+            pa += e + (e >> 3) + (e >> 4);                           /* x1.1875 */
+            pb += (e << 1) + (e >> 2) + (e >> 3) + (e >> 5);         /* x2.40625 */
+            ga += da; gb += db;
+            pt[n] = (short)(pt[n] + (((short)bm_sinb(pa >> 19) * (short)(ga >> 6)
+                                      + (short)bm_sinb(pb >> 19) * (short)(gb >> 6)) >> 15));
+        }
+        v->ph_a = pa; v->ph_b = pb;
+    } else if (ba | bb) {
         unsigned pa = v->ph_a, pb = v->ph_b;
         for (int n = 0; n < BLOCK / 2; n++) {
             const unsigned e = pitch[2 * n] + pitch[2 * n + 1] + dmod;
@@ -212,11 +241,9 @@ static void bm_render(void *voice, short *out, const short *par, const unsigned 
         }
         v->ph_a = pa; v->ph_b = pb;
     } else {
-        unsigned e = 0;                                              /* the phases still move with the pitch */
-        for (int n = 0; n < BLOCK; n++) e += pitch[n];
-        e += dmod * (BLOCK / 2);
-        v->ph_a += e + (e >> 3) + (e >> 4);
-        v->ph_b += (e << 1) + (e >> 2) + (e >> 3) + (e >> 5);
+        const unsigned e = ph - ph0;                                 /* the phases still move with the pitch: the */
+        v->ph_a += e + (e >> 3) + (e >> 4);                          /* fundamental's own move (1.5.3: not 128 more */
+        v->ph_b += (e << 1) + (e >> 2) + (e >> 3) + (e >> 5);        /* reads of the pitch, the same sum) */
     }
 
     /* ---- pass 3: 128 samples, each second the mean of its neighbours. The gains sum to 18,950 (26,800 x 0.71), so

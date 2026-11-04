@@ -48,6 +48,8 @@ envelope, as before.
   Opus refuses the one that loads later.
 - **Velocity is applied once.** Under Opus the OS scales each voice by velocity. The op1r build also scaled by it
   inside the engine, so soft notes come out a little louder here.
+- **No pop on retrigger (1.5.3).** A new note on a voice that still sounds (mono, a poly voice in its release) keeps
+  its waveform going, and a new bell strike glides in over 1.45 ms. See the changelog.
 - **Half rate.** Since 1.5.2 the voice is computed at 44.1 kHz with its LFOs once a block, to fit the OP-1's
   processor. Every note stays within 1 dB of v1.3; the highest notes lose up to 0.8 dB of their top harmonics.
 - **LFO.** The knobs reach the engine with the OS's LFO already in them, so the T4 LFO can now move BLOOD, ECLIPSE,
