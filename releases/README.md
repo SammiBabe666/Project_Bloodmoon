@@ -10,7 +10,7 @@ copied here or into `download/` by hand.
 | 1.4 | [`v1.4-knl/bloodmoon.knl`](v1.4-knl/bloodmoon.knl), also `download/hundekraft/` | Hundekraft 3.0+ | `knl/source/` at `1152b7f` (Hundekraft SDK 3.0.3, bfin-elf-gcc 13.3) | `e8b8a691…41201` | Not yet tested |
 | 1.3 | [`v1.3/bloodmoon.op1p`](v1.3/bloodmoon.op1p) | op1r loader | `src/` at `3cac835` (op1r `make_plugin.py`) | `8440dc1e…6c606` | Plays well |
 | 1.2 | [`v1.2/bloodmoon.op1p`](v1.2/bloodmoon.op1p) | op1r loader | Before this repository (added in `1152b7f`) | `239943f3…98afd` | Screen shows; crackled on the speaker |
-| 1.1 | [`v1.1-louder/bloodmoon.op1p`](v1.1-louder/bloodmoon.op1p) | op1r loader | Before this repository (added in `1152b7f`) | `1ca127cc…d5870` | Not reported |
+| 1.1 | [`v1.1-louder/bloodmoon.op1p`](v1.1-louder/bloodmoon.op1p) | op1r loader | Before this repository (added in `1152b7f`) | `1ca127cc…e5870` | Not reported |
 | 1.0 | [`v1.0/bloodmoon.op1p`](v1.0/bloodmoon.op1p) | op1r loader | Before this repository (added in `1152b7f`) | `45c2a18f…1a2be` | Works |
 
 The Opus builds 1.5.0 and 1.5.1 were switched off for their CPU on a real OP-1 and are not kept as files (their

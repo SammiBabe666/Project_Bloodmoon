@@ -10,6 +10,7 @@
 | `presets/bloodmoon/` | The eight presets, for all platforms |
 | `shared/preset-specifications/` | The presets' settings (the source the files are made from) |
 | `shared/design-notes/` | What makes the sound BLOODMOON, for anyone changing it |
+| `tests/` | The whole-repository tests: `run.sh` (all of them), `check_repo.py`, `engine_test.c`, `firmware-ties.txt` |
 | `tools/preset-validation/` | `validate_presets.py` |
 | `tools/build-platform/` | `build-opus.sh`, `stage-hundekraft.sh` |
 | `download/` | The released bundle users download; changed by hand only |
@@ -18,9 +19,18 @@
 
 ## Validate everything
 
-On any Linux or macOS machine with a C compiler and Python 3, from the repository root:
+On any Linux or macOS machine with a C compiler, Python 3 and git, from the repository root, one command runs every test
+below (it clones the pinned Opus kit into `build/opus-kit` the first time, or uses `OPUS_SDK`):
 
 ```
+tests/run.sh
+```
+
+`tests/run.sh repo engines` runs only those steps (`repo engines presets op1 hundekraft opus`). The same by hand:
+
+```
+python3 tests/check_repo.py
+OPUS_SDK=/tmp/opus-kit/plugin-kit/sdk tests/run.sh engines
 python3 tools/preset-validation/validate_presets.py --render
 platforms/op1/tests/run.sh
 platforms/hundekraft/tests/run.sh
@@ -34,6 +44,8 @@ GitHub runs the same on every push (`.github/workflows/tests.yml`).
 
 | Test | Checks |
 |---|---|
+| `tests/check_repo.py` | Every file in `releases/README.md` matches its SHA-256; the download zip holds exactly `make_zip.py`'s files, each equal to its source, and its `.opmod` says the zip's version; the Opus manifest and `cpu.txt`; a CHANGELOG row for each platform's version; every firmware function and raw address the Opus source uses (and the released `.opmod` links) is in `tests/firmware-ties.txt` |
+| `tests/run.sh engines` | Both engines (v1.3 and the Opus port) with sanitizers: 625 knob settings x 3 notes and every MIDI note, never silent, never above the design peak; tuning; voices independent; a voice from leftover bytes plays as a clean one; knob throws do not click (BLOOD, and GREEN in v1.3, have known small clicks on low notes, held to today's size); no DC |
 | `validate_presets.py --render` | Eight sounds; names, files, ranges, duplicates; AIFF-C format; settings equal the spec; install path in the docs; each renders, is not silent, does not clip, levels within 6 dB |
 | `platforms/op1/tests/run.sh` | The engine at default, minimum and maximum knobs with sanitizers; screen digits and centring |
 | `platforms/hundekraft/tests/run.sh` | The staged kennel folder: manifest identity and defaults, the engine rendered with sanitizers |

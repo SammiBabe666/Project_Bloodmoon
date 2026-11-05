@@ -1,6 +1,6 @@
 name: Tests
 
-# The computer tests of all three platforms and the preset check, on every push and pull request. No Blackfin
+# The repository checks, both engines' behaviour tests, the computer tests of all three platforms and the preset check, on every push and pull request. No Blackfin
 # compiler needed; building the plugin files is the manual "Build Opus plugin" workflow.
 on:
   push:
@@ -19,6 +19,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Repository (released files and hashes, download zip, manifests, firmware ties)
+        run: python tests/check_repo.py
+      - name: Engines' behaviour, v1.3 and Opus (with sanitizers)
+        run: OPUS_SDK=opus-kit/plugin-kit/sdk tests/run.sh engines
       - name: Presets (specification, files, rendered levels)
         run: python tools/preset-validation/validate_presets.py --render
       - name: Opus presets (sound.json up to date with the specification)
