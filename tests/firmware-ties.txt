@@ -1,0 +1,8 @@
+# Every OP-1 firmware function (fw_*) and raw firmware address the Opus build of BLOODMOON uses, one a line: the name
+# or address, then what it is and where it comes from. tests/check_repo.py fails on one that is not listed, so each new
+# tie is a decision. They are what a new Opus core (Beta 4 and later) may move or drop; the core's own services
+# (opus_*) are not ties. The node's shown byte (+0x50, moon.c's NODE_SHOWN) is an offset and is not found by the check.
+fw_svg_node_find    moon.c: finds the screen's SVG elements by id (the kit's op1fw.h, warn 0)
+fw_node_set_matrix  moon.c: moves the moon, the rose, the bells and the knob values (op1fw.h)
+fw_screen_draw      moon.c: draws the OS screen's SVG each frame, with the frame's dt (opus_plugin.h, 0x01A3B4C8)
+fw_snprintf         moon.c: the plain page's knob values as text (op1fw.h)

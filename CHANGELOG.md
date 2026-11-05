@@ -2,6 +2,7 @@
 
 | Version | Date | In one line | On a real OP-1 |
 |---|---|---|---|
+| Tests 2026-11 | 5 Nov 2026 | One command for every host test (`tests/run.sh`), behaviour tests of both engines, checks of the released files, the zip and the firmware ties. No plugin file changed | (no new files) |
 | Opus presets | 2 Nov 2026 | The 8 sounds as Opus presets (`sound.json`; `.aif` once Opus's format is read from a saved sound) | Not yet tested |
 | Repository 2026-11 | 2 Nov 2026 | Reorganised into `platforms/`, preset validator, tests for all three platforms in CI. No plugin file changed | (no new files) |
 | v1.5.2 | 2 Nov 2026 | Opus build: the voice costs a quarter of 1.5.1's CPU, measured | Not yet tested |
