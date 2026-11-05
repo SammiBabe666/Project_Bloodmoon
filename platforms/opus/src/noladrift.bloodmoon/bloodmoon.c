@@ -48,7 +48,6 @@ const short *bm_qsine = BM_QSINE;          /* opl_init moves it to fast memory w
 
 #define BLOCK             128        /* samples a render (88.2 kHz) */
 
-#define SVG_PATH          "/yaffs2/mod/noladrift.bloodmoon/bloodmoon.svg"   /* where opus_art_text writes it */
 
 typedef struct {
     unsigned ph;           /* fundamental phase (2^32 = one cycle); the harmonics are computed from its sine and cosine */
@@ -231,7 +230,7 @@ static void bm_render(void *voice, short *out, const short *par, const unsigned 
     v->last = (short)last;
 }
 
-/* Not const: when the screen's art cannot be written the engine goes without it (svg 0) and shows the plain page. */
+/* Not const: opl_init sets its T1 page (the art, or the plain page when the art cannot be written). */
 static struct opus_engine BLOODMOON = {
     .size = sizeof(struct opus_engine),
     .name = "bloodmoon",
@@ -242,9 +241,6 @@ static struct opus_engine BLOODMOON = {
     .release = bm_release,
     .render = bm_render,
     .type = "bloodmoon",                       /* op1r's sounds and the v1.2/v1.3 presets carry "type": "bloodmoon" */
-    .svg = SVG_PATH,
-    .screen_init = bm_screen_init,
-    .screen_draw = bm_screen_draw,
 };
 
 int opl_init(struct opl_self *self)
@@ -258,13 +254,10 @@ int opl_init(struct opl_self *self)
     } else {
         opus_log(self, "bloodmoon: no fast memory, the sine table stays in ordinary memory");
     }
-    if (opus_art_text(self, "bloodmoon.svg", BM_SVG, sizeof BM_SVG - 1) < 0) {
+    const int art = opus_art_text(self, "bloodmoon.svg", BM_SVG, sizeof BM_SVG - 1);
+    if (art < 0)
         opus_log(self, "bloodmoon: no room for the screen's art, the plain page instead");
-        BLOODMOON.svg = 0;
-        BLOODMOON.screen_init = 0;
-        BLOODMOON.screen_draw = 0;
-        BLOODMOON.page = bm_page;
-        bm_page_init(self);
-    }
+    bm_page_init(self, art);
+    BLOODMOON.page = art >= 0 ? bm_art_page : bm_page;
     return opus_engine_add(self, &BLOODMOON) < 0 ? -1 : 0;
 }

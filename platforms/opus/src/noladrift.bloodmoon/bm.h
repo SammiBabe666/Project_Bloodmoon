@@ -20,8 +20,7 @@ static inline int bm_sin(unsigned k)       /* k: 0..8191 (higher bits are ignore
     return (k & 4096) ? -s : s;            /* the second half is the first, negated */
 }
 
-void bm_screen_init(void *scr);            /* moon.c: the OS screen's hooks (struct opus_engine's screen_*) */
-void bm_screen_draw(void *scr, int dt);
-void bm_page_init(struct opl_self *self);  /* moon.c: the plain page, when the screen's art could not be written */
-void bm_page(void);
+void bm_page_init(struct opl_self *self, int art);  /* moon.c: art = bloodmoon.svg's art number, or -1 */
+void bm_art_page(void);                    /* moon.c: T1, the moon and cathedral through the core's art service */
+void bm_page(void);                        /* moon.c: the plain page, when the art could not be written or loaded */
 #endif
