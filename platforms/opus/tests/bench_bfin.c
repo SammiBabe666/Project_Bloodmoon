@@ -45,9 +45,8 @@ static short fast_mem[2][2200] __attribute__((aligned(32)));
 static int nfast;
 void *opus_fast(struct opl_self *self, unsigned bytes) { (void)self; return bytes <= sizeof fast_mem[0] ? fast_mem[nfast++] : 0; }
 void opus_log(struct opl_self *self, const char *t) { (void)self; put(t); put("\n"); }
-void bm_screen_init(void *scr) { (void)scr; }
-void bm_screen_draw(void *scr, int dt) { (void)scr; (void)dt; }
-void bm_page_init(struct opl_self *self) { (void)self; }
+void bm_page_init(struct opl_self *self, int art) { (void)self; (void)art; }
+void bm_art_page(void) { }
 void bm_page(void) { }
 
 int opl_init(struct opl_self *self);

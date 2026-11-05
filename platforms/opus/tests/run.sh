@@ -12,7 +12,7 @@ mkdir -p "$OUT"
 W=(-O2 -Wall -Wextra -Werror ${SANITIZE:-})
 cc "${W[@]}" -DOP1_HOST -I"$OP1" -c "$OP1/plugins/bloodmoon/bloodmoon.c" -o "$OUT/v13.o"
 for f in bloodmoon moon; do
-    cc "${W[@]}" -ffreestanding -fno-builtin -I"$OPUS_SDK" -c "$PORT/$f.c" -o "$OUT/$f.o"
+    cc "${W[@]}" -ffreestanding -fno-builtin -DBM_HOST -I"$OPUS_SDK" -c "$PORT/$f.c" -o "$OUT/$f.o"
 done
 cc "${W[@]}" -I"$OPUS_SDK" -I"$PORT" "$ROOT/platforms/opus/tests/compare.c" "$OUT/v13.o" "$OUT/bloodmoon.o" "$OUT/moon.o" -lm -o "$OUT/compare"
 cd "$OUT" && ./compare

@@ -2,6 +2,7 @@
 
 | Version | Date | In one line | On a real OP-1 |
 |---|---|---|---|
+| v1.6.0 (branch `opus-beta4`, prototype) | 5 Nov 2026 | The T1 screen drawn with the core's documented art service instead of the OP-1 firmware's drawing functions; same picture, same movements, sound unchanged | Not yet tested |
 | Opus presets | 2 Nov 2026 | The 8 sounds as Opus presets (`sound.json`; `.aif` once Opus's format is read from a saved sound) | Not yet tested |
 | Repository 2026-11 | 2 Nov 2026 | Reorganised into `platforms/`, preset validator, tests for all three platforms in CI. No plugin file changed | (no new files) |
 | v1.5.2 | 2 Nov 2026 | Opus build: the voice costs a quarter of 1.5.1's CPU, measured | Not yet tested |
@@ -12,6 +13,25 @@
 | v1.2 | 21 Oct 2026 | Knob names and values on the screen, 8 presets, +6 dB | Screen shows; crackled on the speaker |
 | v1.1 | 21 Oct 2026 | +6 dB louder, old screen | Not reported separately |
 | v1.0 | 20 Oct 2026 | First release | Works |
+
+## v1.6.0 prototype: the screen without firmware calls (5 Nov 2026, branch `opus-beta4`)
+
+Preparation for Opus beta 4. 1.5.x drew the moon and cathedral as an OS screen through firmware #246's own
+functions (`fw_svg_node_find`, `fw_node_set_matrix`, an element's shown byte at `+0x50`, and `fw_screen_draw` with a
+hand-written prototype). Opus's core does not check any of them, so a firmware or core change could blank or crash
+the T1 screen with no warning. 1.6.0 draws the same `bloodmoon.svg` through the core's art service (`opus_art_*`,
+`opus_page_keep`/`put`, the service the kit's outatime and erdtree use). The plugin now imports no `fw_*` name.
+
+- **The same picture and movements.** The art service turns and shows elements but cannot slide them, so the moon's
+  rise is a small turn about a pivot 480 units to its left (within 0.36 units of v1.3's height, at most 2.9 degrees
+  of turn). A two-digit value's half-cell centring is one turn step about a pivot far above it (7.294 units, as
+  before). A one-digit value is shown at the middle position.
+- **Lighter when nothing moves.** The picture is drawn again only when something on it changed. While ECLIPSE is at 0
+  and the stars are between flickers, a frame is a copy of the kept pixels.
+- **Sound, presets, id and controls are unchanged.** `bloodmoon.c` changed only in how it sets its T1 page. `core`
+  stays 2.6 (the `type` field). Fallback: the plain page when the art cannot be written or loaded.
+- **Tested:** computer only (`tests/run.sh` with sanitizers: the sound against v1.3 as before, and the screen's
+  turns, digits, still-frame copies and fallback). It has not been compiled for the Blackfin, and it has not been run on an OP-1.
 
 ## Opus presets (2 Nov 2026)
 
